@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+export const dynamic = "force-dynamic";
 
 const client = new OpenAI({
   baseURL: "https://router.huggingface.co/v1",

@@ -5,6 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@/lib/db";
 import bcrypt from "bcrypt";
 import { loginLimiter } from "@/lib/limiter"; // Import de ton limiteur
+export const dynamic = "force-dynamic";
 
 // Erreurs personnalisées
 class InvalidVerificationError extends CredentialsSignin {

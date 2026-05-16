@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import bcrypt from "bcrypt";
 import { Resend } from "resend";
 import { randomUUID } from "crypto";
-
+export const dynamic = "force-dynamic";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
