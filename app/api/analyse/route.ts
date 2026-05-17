@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
+
 export const dynamic = "force-dynamic";
 
 const client = new OpenAI({
@@ -43,71 +44,79 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Situation manquante" }, { status: 400 });
     }
 
-    // 1️⃣ Analyse IA complète
-    const chatCompletion = await client.chat.completions.create({
-      model: "deepseek-ai/DeepSeek-V4-Pro:novita",
-      messages: [
-        {
-          role: "system",
-          content: "Tu es un assistant d'aide à la décision. Réponds de manière concise, encourage, sois sympa et prends tout en compte. Ne répète pas ce que l'utilisateur a dit."
-        },
-        {
-          role: "user",
-          content: `Situation : ${situation}\nChoix : ${choice || "Aucun"}\n\nAnalyse et conseils :`,
-        },
-      ],
-      max_tokens: 800,
-    });
+    const modelName = "Qwen/Qwen3.6-27B:featherless-ai";
 
-    const result = chatCompletion.choices[0].message.content ?? "";
+    // 🔥 OPTIMISATION : On lance les 3 appels IA en PARALLÈLE pour éviter le timeout
+    const [chatCompletion, summaryCompletion, scoreCompletion] = await Promise.all([
+      // 1️⃣ Analyse complète
+      client.chat.completions.create({
+        model: modelName,
+        messages: [
+          {
+            role: "system",
+            content: "Tu es un assistant d'aide à la décision. Réponds de manière concise, encourage, sois sympa et prends tout en compte. Ne répète pas ce que l'utilisateur a dit."
+          },
+          {
+            role: "user",
+            content: `Situation : ${situation}\nChoix : ${choice || "Aucun"}\n\nAnalyse et conseils :`,
+          },
+        ],
+        max_tokens: 800,
+      }),
 
-    // 2️⃣ Résumé ultra court (max 6 mots)
-    const summaryCompletion = await client.chat.completions.create({
-      model: "deepseek-ai/DeepSeek-V4-Pro:novita",
-      messages: [
-        {
-          role: "system",
-          content: "Résume cette question en maximum 6 mots. Donne juste un titre court. Pas de phrases complètes.(quelque chose de simple)"
-        },
-        {
-          role: "user",
-          content: situation,
-        },
-      ],
-      max_tokens: 20,
-    });
+      // 2️⃣ Résumé court
+      client.chat.completions.create({
+        model: modelName,
+        messages: [
+          {
+            role: "system",
+            content: "Résume cette question en maximum 6 mots. Donne juste un titre court. Pas de phrases complètes (quelque chose de simple)."
+          },
+          {
+            role: "user",
+            content: situation,
+          },
+        ],
+        max_tokens: 20,
+      }),
 
-    const summary = summaryCompletion.choices[0].message.content?.trim() ?? "Résumé indisponible";
+      // 3️⃣ Score d'importance
+      client.chat.completions.create({
+        model: modelName,
+        messages: [
+          {
+            role: "system",
+            content: "Analyse cette question et retourne un score entre 0 et 100 indiquant à quel point c'est une bonne chose ou une bonne habitude. Retourne UNIQUEMENT le nombre brut, sans texte autour, sans markdown."
+          },
+          {
+            role: "user",
+            content: `Situation : ${situation}\nChoix : ${choice || "Aucun"}`,
+          },
+        ],
+        max_tokens: 10,
+      })
+    ]);
 
-    // 3️⃣ Score d'importance 0–100
-    const scoreCompletion = await client.chat.completions.create({
-      model: "deepseek-ai/DeepSeek-V4-Pro:novita",
-      messages: [
-        {
-          role: "system",
-          content: "Analyse cette question et retourne un score entre 0 et 100 indiquant à quel point c'est une bonne chose ou une bonne habitude(sois sympa sur les score). Retourne uniquement un nombre, rien d'autre (évite les multiples de 5, ex: 73, 76, 78...)."
-        },
-        {
-          role: "user",
-          content: `Situation : ${situation}\nChoix : ${choice || "Aucun"}`,
-        },
-      ],
-      max_tokens: 5,
-    });
-
-    const scoreText = scoreCompletion.choices[0].message.content ?? "0";
+    // Extraction des données de manière sécurisée
+    const result = chatCompletion.choices[0]?.message?.content ?? "";
+    const summary = summaryCompletion.choices[0]?.message?.content?.trim().replace(/["']/g, "") ?? "Résumé indisponible";
+    
+    // Nettoyage robuste du score
+    const scoreText = scoreCompletion.choices[0]?.message?.content ?? "50";
     const scoreMatch = scoreText.match(/\d+/);
-    const score = scoreMatch ? Math.min(100, Math.max(0, parseInt(scoreMatch[0]))) : 50;
-    // 4️⃣ Sauvegarde DB
+    const score = scoreMatch ? Math.min(100, Math.max(0, parseInt(scoreMatch[0], 10))) : 50;
+
+    // 4️⃣ Sauvegardes en Base de données (exécutées l'une après l'autre pour garantir la cohérence)
     await db.proposition.create({
       data: {
         ia_prop: result,
         for_email: session.user.email,
+        question: summary, // Tu as un champ question vide par défaut dans ton schéma Proposition, profites-en !
+        score: score
       },
     });
 
-    // ✅ db.question (pas db.questions)
-    await db.question.create({
+    const newQuestion = await db.question.create({
       data: {
         by_email: session.user.email,
         question: summary,
@@ -115,14 +124,14 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ result, summary, score });
+    // On retourne les données, incluant la question fraîchement créée
+    return NextResponse.json({ result, summary, score, questionId: newQuestion.id });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    console.error("Erreur API via HF Router:", error);
+    console.error("Erreur critique API Analyse:", error);
     return NextResponse.json(
-      { error: "Le modèle est indisponible ou le quota est atteint.", details: error?.message },
-      { status: error?.status || 500 }
+      { error: "Une erreur est survenue lors du traitement.", details: error?.message },
+      { status: 500 }
     );
   }
 }
