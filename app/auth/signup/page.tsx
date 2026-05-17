@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react"; 
-import BackHomeButton from '../../Components/returnbutton'
+import { Eye, EyeOff } from "lucide-react";
+import BackHomeButton from "../../Components/returnbutton";
 import GoogleButton from "@/components/GoogleButton";
 
 export default function SignupPage() {
@@ -48,15 +48,12 @@ export default function SignupPage() {
         className="w-full max-w-md p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-xl"
       >
         <BackHomeButton />
-        <h1 className="text-3xl font-semibold mb-2 text-white text-center">
-          Créer un compte
-        </h1>
+        <h1 className="text-3xl font-semibold mb-2 text-white text-center">Créer un compte</h1>
 
         <p className="text-center text-white/60 text-sm mb-8">
           Rejoins Choicely et commence à créer tes choix.
         </p>
 
-        {/* --- AFFICHAGE DES ERREURS --- */}
         {errorMsg && (
           <div className="mb-4 p-3 rounded-lg text-sm bg-red-500/20 border border-red-500/40 text-red-300 text-center animate-in fade-in zoom-in duration-300">
             {errorMsg}
@@ -64,7 +61,6 @@ export default function SignupPage() {
         )}
 
         <div className="flex flex-col gap-4">
-          {/* --- EMAIL --- */}
           <div className="flex flex-col gap-2">
             <label className="text-white/80 text-sm">Email</label>
             <input
@@ -76,7 +72,6 @@ export default function SignupPage() {
             />
           </div>
 
-          {/* --- MOT DE PASSE AVEC OEIL --- */}
           <div className="flex flex-col gap-2">
             <label className="text-white/80 text-sm">Mot de passe</label>
             <div className="relative">
@@ -87,30 +82,25 @@ export default function SignupPage() {
                 placeholder="••••••••"
                 className="w-full bg-black/20 border border-white/10 rounded-lg p-3 pr-12 text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition"
               />
-              <div className="pt-4">
-                <GoogleButton />
-              </div>
               <button
                 type="button"
                 onClick={() => setShow(!show)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-white/40 transition hover:text-white"
+                aria-label={show ? "Cacher le mot de passe" : "Afficher le mot de passe"}
               >
-                {show ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
-                <span className="sr-only">
-                  {show ? "Cacher le mot de passe" : "Afficher le mot de passe"}
-                </span>
+                {show ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
+          </div>
+
+          <div className="pt-1">
+            <GoogleButton />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="mt-4 bg-white text-black font-medium p-3 rounded-lg hover:bg-white/90 transition disabled:opacity-40"
+            className="mt-2 bg-white text-black font-medium p-3 rounded-lg hover:bg-white/90 transition disabled:opacity-40"
           >
             {loading ? "Création..." : "Créer un compte"}
           </button>

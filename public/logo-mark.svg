@@ -1,0 +1,55 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="112" fill="#0F1117"/>
+  <rect x="1.5" y="1.5" width="509" height="509" rx="110.5" stroke="url(#border)" stroke-opacity="0.45" stroke-width="3"/>
+
+  <g filter="url(#softGlow)">
+    <path d="M160 170C204 126 274 121 325 158C371 191 392 244 381 295" stroke="url(#pathGradient)" stroke-width="34" stroke-linecap="round"/>
+    <path d="M160 342C204 386 274 391 325 354C371 321 392 268 381 217" stroke="url(#pathGradient2)" stroke-width="34" stroke-linecap="round"/>
+  </g>
+
+  <circle cx="150" cy="256" r="33" fill="#111827" stroke="url(#nodeStroke)" stroke-width="12"/>
+  <circle cx="384" cy="206" r="28" fill="#111827" stroke="#6D5CFF" stroke-width="12"/>
+  <circle cx="384" cy="306" r="28" fill="#111827" stroke="#20D8E8" stroke-width="12"/>
+
+  <path d="M227 256H307" stroke="white" stroke-opacity="0.82" stroke-width="26" stroke-linecap="round"/>
+  <path d="M287 222L321 256L287 290" stroke="white" stroke-opacity="0.82" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <circle cx="256" cy="256" r="168" stroke="url(#halo)" stroke-opacity="0.22" stroke-width="2"/>
+  <circle cx="256" cy="256" r="118" stroke="url(#halo)" stroke-opacity="0.14" stroke-width="2"/>
+
+  <defs>
+    <linearGradient id="border" x1="70" y1="48" x2="444" y2="464" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B7CFF"/>
+      <stop offset="0.52" stop-color="#20D8E8"/>
+      <stop offset="1" stop-color="#34D399"/>
+    </linearGradient>
+
+    <linearGradient id="pathGradient" x1="150" y1="148" x2="389" y2="289" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#20D8E8"/>
+      <stop offset="1" stop-color="#6D5CFF"/>
+    </linearGradient>
+
+    <linearGradient id="pathGradient2" x1="150" y1="364" x2="389" y2="223" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#34D399"/>
+      <stop offset="1" stop-color="#20D8E8"/>
+    </linearGradient>
+
+    <linearGradient id="nodeStroke" x1="119" y1="226" x2="181" y2="287" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#34D399"/>
+      <stop offset="0.5" stop-color="#20D8E8"/>
+      <stop offset="1" stop-color="#6D5CFF"/>
+    </linearGradient>
+
+    <linearGradient id="halo" x1="94" y1="84" x2="419" y2="427" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6D5CFF"/>
+      <stop offset="0.52" stop-color="#20D8E8"/>
+      <stop offset="1" stop-color="#34D399"/>
+    </linearGradient>
+
+    <filter id="softGlow" x="97" y="86" width="334" height="340" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feGaussianBlur stdDeviation="8" result="effect1_foregroundBlur"/>
+    </filter>
+  </defs>
+</svg>
