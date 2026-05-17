@@ -200,8 +200,10 @@ export default function DashboardMain() {
     } catch {}
   }, []);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { refreshData(); }, [refreshData]);
+  useEffect(() => {
+  refreshData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!mainRef.current) return;
