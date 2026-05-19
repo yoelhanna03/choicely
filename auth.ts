@@ -1,6 +1,7 @@
 // auth.ts
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@/lib/db";
 import bcrypt from "bcrypt";
@@ -21,6 +22,11 @@ const nextAuth = NextAuth({
   session: { strategy: "jwt" },
   pages: { signIn: "/auth/login" },
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      allowDangerousEmailAccountLinking: true,
+    }),
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
@@ -71,6 +77,27 @@ const nextAuth = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      // Si l'utilisateur se connecte avec Google
+      if (account?.provider === "google") {
+        // Mettre à jour/créer l'utilisateur avec emailVerified confirmé
+        await db.user.upsert({
+          where: { email: user.email! },
+          update: { 
+            emailVerified: new Date(),
+            name: user.name || user.email?.split("@")[0],
+          },
+          create: {
+            email: user.email!,
+            name: user.name || user.email?.split("@")[0],
+            emailVerified: new Date(),
+            // passwordHash reste null, donc on ne peut pas se connecter avec Credentials
+          },
+        });
+        return true;
+      }
+      return true;
+    },
     async session({ session, token }) {
       if (token?.sub && session.user) session.user.id = token.sub;
       return session;

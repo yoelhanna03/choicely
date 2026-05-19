@@ -86,7 +86,7 @@ export async function POST(req: Request) {
         messages: [
           {
             role: "system",
-            content: "Analyse cette question et retourne un score entre 0 et 100 indiquant à quel point c'est une bonne chose ou une bonne habitude. Retourne UNIQUEMENT le nombre brut, sans texte autour, sans markdown."
+            content: "Analyse cette question et retourne un score entre 0 et 100 indiquant à quel point c'est une bonne chose ou une bonne habitude. Retourne UNIQUEMENT le nombre brut, sans texte autour, sans markdown.PS : si par exemple le score est de 50 retourne quelque chose de autor comme 49 ou 51 ou encore 48 ou 52."
           },
           {
             role: "user",

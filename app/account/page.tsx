@@ -1,8 +1,9 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { User, Mail, Shield, Calendar, KeyRound } from "lucide-react";
+import { User, Mail, Shield, Calendar, KeyRound, Trash2 } from "lucide-react";
 import Sidebar from "../Components/Home/sidebar";
+import { AlertDialogDestructive } from "@/components/ui/AlertDeleteAccount";
 
 export default function AccountPage() {
   const { data: session, status } = useSession();
@@ -56,7 +57,7 @@ export default function AccountPage() {
             </div>
 
             {/* DETAILS DU COMPTE */}
-            <div className="md:col-span-2 p-6 md:p-8 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-md space-y-6">
+            <div className="md:col-span-2 p-6 md:p-8 rounded-2xl border border-white/10 bg-white/2 backdrop-blur-md space-y-6">
               <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-indigo-400/80">
                 Informations personnelles
               </h3>
@@ -67,7 +68,7 @@ export default function AccountPage() {
                   <label className="text-[11px] font-medium text-white/30 flex items-center gap-1.5">
                     <User size={12} /> Nom complet
                   </label>
-                  <div className="w-full h-[42px] flex items-center px-4 rounded-xl border border-white/5 bg-white/5 text-sm text-white/80">
+                  <div className="w-full h-10.5 flex items-center px-4 rounded-xl border border-white/5 bg-white/5 text-sm text-white/80">
                     {isLoading ? (
                       <div className="h-3 bg-white/10 rounded w-1/2 animate-pulse" />
                     ) : (
@@ -81,7 +82,7 @@ export default function AccountPage() {
                   <label className="text-[11px] font-medium text-white/30 flex items-center gap-1.5">
                     <Mail size={12} /> Adresse email
                   </label>
-                  <div className="w-full h-[42px] flex items-center px-4 rounded-xl border border-white/5 bg-white/5 text-sm text-white/80 overflow-x-auto whitespace-nowrap scrollbar-none">
+                  <div className="w-full h-10.5 flex items-center px-4 rounded-xl border border-white/5 bg-white/5 text-sm text-white/80 overflow-x-auto whitespace-nowrap scrollbar-none">
                     {isLoading ? (
                       <div className="h-3 bg-white/10 rounded w-3/4 animate-pulse" />
                     ) : (
@@ -95,7 +96,7 @@ export default function AccountPage() {
                   <label className="text-[11px] font-medium text-white/30 flex items-center gap-1.5">
                     <Shield size={12} /> Type de compte
                   </label>
-                  <div className="w-full h-[42px] flex items-center px-4 rounded-xl border border-white/5 bg-white/5 text-sm text-white/80">
+                  <div className="w-full h-10.5 flex items-center px-4 rounded-xl border border-white/5 bg-white/5 text-sm text-white/80">
                     Standard (Free)
                   </div>
                 </div>
@@ -105,18 +106,19 @@ export default function AccountPage() {
                   <label className="text-[11px] font-medium text-white/30 flex items-center gap-1.5">
                     <Calendar size={12} /> Membre depuis
                   </label>
-                  <div className="w-full h-[42px] flex items-center px-4 rounded-xl border border-white/5 bg-white/5 text-sm text-white/80">
+                  <div className="w-full h-10.5 flex items-center px-4 rounded-xl border border-white/5 bg-white/5 text-sm text-white/80">
                     {memberSince}
                   </div>
                 </div>
               </div>
             </div>
 
+
           </div>
 
           {/* SECTION SECURITE */}
           <div className="pt-4">
-            <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.01] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="p-6 rounded-2xl border border-white/5 bg-white/1 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex gap-3 items-center">
                 <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60">
                   <KeyRound size={18} />
@@ -129,6 +131,22 @@ export default function AccountPage() {
               <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
                 Protege via OAuth
               </span>
+            </div>
+          </div>
+
+          {/* SECTION ZONE DANGER */}
+          <div className="pt-4 border-t border-white/5">
+            <div className="p-6 rounded-2xl border border-destructive/20 bg-destructive/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex gap-3 items-center">
+                <div className="p-2.5 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive/80">
+                  <Trash2 size={18} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-white">Zone danger</h4>
+                  <p className="text-xs text-white/30 mt-0.5">Cette action est irréversible. Toutes vos données seront supprimées.</p>
+                </div>
+              </div>
+              <AlertDialogDestructive />
             </div>
           </div>
 

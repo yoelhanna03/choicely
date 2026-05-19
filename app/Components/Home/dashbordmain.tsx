@@ -343,7 +343,7 @@ export default function DashboardMain() {
       <main
         ref={mainRef}
         onMouseMove={handleMouseMove}
-        className="d-root ml-50 flex-1 min-h-screen p-8 lg:p-12 relative"
+        className="d-root ml-50 flex-1 min-h-screen p-6 lg:p-10 relative"
         style={{
           background: `radial-gradient(ellipse 70% 45% at ${mousePos.x}px ${mousePos.y}px, rgba(99,102,241,0.04) 0%, transparent 60%)`,
         }}
@@ -351,35 +351,35 @@ export default function DashboardMain() {
         {mounted && (
           <>
             {/* HEADER */}
-            <header className="flex items-start justify-between mb-12 stagger-1">
-              <div>
+            <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10 stagger-1">
+              <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="dot-live" />
                   <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
                     Espace décision
                   </span>
                 </div>
-                <h1 className="d-serif text-[2.8rem] font-normal text-white leading-[1.05] tracking-tight">
+                <h1 className="d-serif text-[2.5rem] lg:text-[2.8rem] font-normal text-white leading-[1.05] tracking-tight">
                   Tableau de <span className="bilan-gradient italic">bord</span>
                 </h1>
               </div>
 
-              <div className="flex items-center gap-4 pt-1">
+              <div className="flex items-center gap-3 flex-wrap lg:flex-nowrap justify-end">
                 {lastQuestions.length > 0 && (
-                  <div className="text-right px-4 py-2 rounded-2xl border border-white/6 bg-white/2">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/20 mb-0.5">Score moyen</p>
-                    <p className="text-[1.8rem] font-bold text-white/85 leading-none tabular-nums">
+                  <div className="text-right px-4 py-3 rounded-2xl border border-white/6 bg-white/2 min-w-fit">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/20 mb-1">Score moyen</p>
+                    <p className="text-[1.6rem] lg:text-[1.8rem] font-bold text-white/85 leading-none tabular-nums">
                       {animAvg}<span className="text-sm font-normal text-white/25 ml-0.5">/100</span>
                     </p>
                   </div>
                 )}
                 <button
                   onClick={() => { setShowResult(false); setShowIntro(true); }}
-                  className="d-btn px-5 py-3 rounded-2xl bg-white text-[#0f1117] text-[13px] font-bold tracking-wide"
+                  className="d-btn px-5 py-3 rounded-2xl bg-white text-[#0f1117] text-[12px] lg:text-[13px] font-bold tracking-wide whitespace-nowrap"
                 >
                   + Nouvelle analyse
                 </button>
-                <div className="h-11 w-11 rounded-2xl border border-white/8 bg-white/4 overflow-hidden">
+                <div className="h-11 w-11 rounded-2xl border border-white/8 bg-white/4 overflow-hidden flex-shrink-0">
                   <img src="/favicon.ico" alt="avatar" className="h-full w-full object-cover opacity-60" />
                 </div>
               </div>
@@ -388,75 +388,81 @@ export default function DashboardMain() {
             {!showResult && !showIntro && (
               <>
                 {/* MINI STAT PILLS */}
-                <div className="flex items-center gap-3 mb-8 stagger-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-10 stagger-1">
                   {[
                     { label: "Analyses", value: allScores.length, color: "#a5b4fc" },
                     { label: "Meilleur score", value: bestScore ? `${bestScore}/100` : "—", color: "#34d399" },
                     { label: "Tendance", value: avgScore >= 75 ? "↑ Positive" : avgScore >= 50 ? "→ Stable" : avgScore > 0 ? "↓ À revoir" : "—", color: avgScore >= 75 ? "#34d399" : avgScore >= 50 ? "#60a5fa" : "#f87171" },
                   ].map((s, i) => (
-                    <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/[0.06] bg-white/[0.02]">
+                    <div key={i} className="flex items-center gap-2 px-4 py-3 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.03] transition-colors">
                       <span className="text-[10px] font-semibold uppercase tracking-widest text-white/25">{s.label}</span>
-                      <span className="text-[13px] font-bold" style={{ color: s.color }}>{s.value}</span>
+                      <span className="text-[13px] font-bold ml-auto" style={{ color: s.color }}>{s.value}</span>
                     </div>
                   ))}
                 </div>
 
                 {/* QUESTION CARDS */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 stagger-2">
-                  {(lastQuestions.length === 0 ? emptyCards : lastQuestions).map((item, i) => {
-                    const q = typeof item === "object" ? item : null;
-                    const isHovered = hoveredCard === i;
-                    return (
-                      <div
-                        key={q?.id ?? i}
-                        className={`d-card p-6 rounded-2xl border bg-white/2.5 backdrop-blur-sm ${isHovered ? "hovered" : "border-white/[0.07]"}`}
-                        onMouseEnter={() => setHoveredCard(i)}
-                        onMouseLeave={() => setHoveredCard(null)}
-                      >
-                        <div className="d-card-glow" />
-                        <div className="flex items-start justify-between mb-4">
-                          <div>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/20 mb-1.5">
-                              Analyse {String(i + 1).padStart(2, "0")}
-                            </p>
-                            {q && (
-                              <span className="d-tag" style={{
-                                background: q.score >= 75 ? "rgba(52,211,153,0.1)" : q.score >= 50 ? "rgba(96,165,250,0.1)" : "rgba(248,113,113,0.1)",
-                                color: q.score >= 75 ? "#34d399" : q.score >= 50 ? "#60a5fa" : "#f87171",
-                                border: `0.5px solid ${q.score >= 75 ? "rgba(52,211,153,0.2)" : q.score >= 50 ? "rgba(96,165,250,0.2)" : "rgba(248,113,113,0.2)"}`,
-                              }}>
-                                {q.score >= 75 ? "✓ Fort" : q.score >= 50 ? "~ Moyen" : "↓ Faible"}
-                              </span>
+                <div className="mb-10 stagger-2">
+                  <div className="flex items-center gap-2 mb-5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/30">Dernières analyses</span>
+                    <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {(lastQuestions.length === 0 ? emptyCards : lastQuestions).map((item, i) => {
+                      const q = typeof item === "object" ? item : null;
+                      const isHovered = hoveredCard === i;
+                      return (
+                        <div
+                          key={q?.id ?? i}
+                          className={`d-card p-6 rounded-2xl border bg-white/2.5 backdrop-blur-sm ${isHovered ? "hovered" : "border-white/[0.07]"}`}
+                          onMouseEnter={() => setHoveredCard(i)}
+                          onMouseLeave={() => setHoveredCard(null)}
+                        >
+                          <div className="d-card-glow" />
+                          <div className="flex items-start justify-between mb-5">
+                            <div>
+                              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/20 mb-2">
+                                Analyse {String(i + 1).padStart(2, "0")}
+                              </p>
+                              {q && (
+                                <span className="d-tag" style={{
+                                  background: q.score >= 75 ? "rgba(52,211,153,0.1)" : q.score >= 50 ? "rgba(96,165,250,0.1)" : "rgba(248,113,113,0.1)",
+                                  color: q.score >= 75 ? "#34d399" : q.score >= 50 ? "#60a5fa" : "#f87171",
+                                  border: `0.5px solid ${q.score >= 75 ? "rgba(52,211,153,0.2)" : q.score >= 50 ? "rgba(96,165,250,0.2)" : "rgba(248,113,113,0.2)"}`,
+                                }}>
+                                  {q.score >= 75 ? "✓ Fort" : q.score >= 50 ? "~ Moyen" : "↓ Faible"}
+                                </span>
+                              )}
+                            </div>
+                            {q ? <ScoreArc score={q.score} /> : (
+                              <div className="w-12 h-12 rounded-full border-2 border-white/5 flex items-center justify-center flex-shrink-0">
+                                <span className="text-white/10 text-xs">—</span>
+                              </div>
                             )}
                           </div>
-                          {q ? <ScoreArc score={q.score} /> : (
-                            <div className="w-12 h-12 rounded-full border-2 border-white/5 flex items-center justify-center">
-                              <span className="text-white/10 text-xs">—</span>
+                          {q ? (
+                            <p className="text-[13px] text-white/65 leading-relaxed font-medium line-clamp-3">{q.question}</p>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="skeleton h-3 w-full" />
+                              <div className="skeleton h-3 w-2/3" />
                             </div>
                           )}
                         </div>
-                        {q ? (
-                          <p className="text-[13px] text-white/65 leading-relaxed font-medium line-clamp-2">{q.question}</p>
-                        ) : (
-                          <div className="space-y-2">
-                            <div className="skeleton h-3 w-full" />
-                            <div className="skeleton h-3 w-2/3" />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* SEPARATOR */}
-                <div className="flex items-center gap-4 mb-6 stagger-3">
+                <div className="flex items-center gap-4 mb-8 stagger-3">
                   <div className="sep flex-1" />
                   <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/20 px-2">Progression des scores</p>
                   <div className="sep flex-1" />
                 </div>
 
                 {/* GRAPH */}
-                <div className="stagger-3 mb-8">
+                <div className="stagger-3 mb-10">
                   <div className="relative rounded-3xl border border-white/[0.07] overflow-hidden p-6 lg:p-8 backdrop-blur-sm"
                     style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.04) 0%, rgba(255,255,255,0.015) 50%, rgba(34,211,238,0.03) 100%)" }}
                   >
@@ -467,16 +473,16 @@ export default function DashboardMain() {
                       style={{ background: "linear-gradient(90deg, transparent, rgba(99,102,241,0.25), rgba(34,211,238,0.25), transparent)" }}
                     />
 
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex flex-col gap-6">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/25 mb-1">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/25 mb-2">
                           Évolution des scores
                         </p>
                         <p className="text-sm text-white/40">
                           {allScores.length > 0 ? `${allScores.length} analyse${allScores.length > 1 ? "s" : ""} enregistrée${allScores.length > 1 ? "s" : ""}` : "Aucune analyse pour l'instant"}
                         </p>
                       </div>
-                      <div className="flex items-center gap-4 text-[11px] text-white/25">
+                      <div className="flex items-center gap-4 text-[11px] text-white/25 flex-wrap">
                         {[{ c: "#34d399", l: "Fort (75+)" }, { c: "#60a5fa", l: "Moyen (50+)" }, { c: "#f87171", l: "Faible" }].map(leg => (
                           <div key={leg.l} className="flex items-center gap-1.5">
                             <div className="w-2 h-2 rounded-full" style={{ background: leg.c }} />
@@ -486,23 +492,25 @@ export default function DashboardMain() {
                       </div>
                     </div>
 
-                    {allScores.length > 0 ? (
-                      <ScoreChart scores={allScores} />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-12 gap-3">
-                        <div className="flex items-end gap-1.5">
-                          {[0,1,2,3,4].map(j => (
-                            <div key={j} className="skeleton rounded-full" style={{ width: 3, height: `${12 + j * 6}px` }} />
-                          ))}
+                    <div className="mt-6">
+                      {allScores.length > 0 ? (
+                        <ScoreChart scores={allScores} />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-12 gap-3">
+                          <div className="flex items-end gap-1.5">
+                            {[0,1,2,3,4].map(j => (
+                              <div key={j} className="skeleton rounded-full" style={{ width: 3, height: `${12 + j * 6}px` }} />
+                            ))}
+                          </div>
+                          <p className="text-[11px] text-white/20 uppercase tracking-widest">Lancez votre première analyse</p>
                         </div>
-                        <p className="text-[11px] text-white/20 uppercase tracking-widest">Lancez votre première analyse</p>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 {/* SEPARATOR */}
-                <div className="flex items-center gap-4 mb-6 stagger-4">
+                <div className="flex items-center gap-4 mb-8 stagger-4">
                   <div className="sep flex-1" />
                   <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/20 px-2">Synthèse IA</p>
                   <div className="sep flex-1" />
@@ -510,7 +518,7 @@ export default function DashboardMain() {
 
                 {/* BILAN */}
                 <div className="stagger-5">
-                  <div className="relative rounded-3xl border border-white/[0.07] overflow-hidden p-8 lg:p-10 backdrop-blur-sm"
+                  <div className="relative rounded-3xl border border-white/[0.07] overflow-hidden p-6 lg:p-10 backdrop-blur-sm"
                     style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.05) 0%, rgba(255,255,255,0.02) 50%, rgba(34,211,238,0.04) 100%)" }}
                   >
                     <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full opacity-[0.05]"
@@ -522,7 +530,7 @@ export default function DashboardMain() {
 
                     <div className="relative">
                       {isProcessingBilan ? (
-                        <div className="flex flex-col items-center gap-5 py-6">
+                        <div className="flex flex-col items-center gap-5 py-8">
                           <div className="flex items-end gap-1.5 h-10">
                             {[0,1,2,3,4].map(j => (
                               <div key={j} className="wave-bar" style={{ height: `${20 + j * 6}px`, animationDelay: `${j * 0.12}s` }} />
@@ -535,14 +543,14 @@ export default function DashboardMain() {
                       ) : (
                         <>
                           {bilanIA && (
-                            <div className="flex items-center gap-2.5 mb-5">
+                            <div className="flex items-center gap-2.5 mb-6">
                               <div className="dot-live" />
                               <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-400/60">
                                 Bilan à jour
                               </span>
                             </div>
                           )}
-                          <p className="d-serif bilan-gradient text-[1.4rem] lg:text-[1.65rem] leading-[1.65] font-normal max-w-4xl">
+                          <p className="d-serif bilan-gradient text-[1.3rem] lg:text-[1.5rem] leading-[1.7] lg:leading-[1.8] font-normal max-w-4xl">
                             {bilanIA || (
                               <span style={{ WebkitTextFillColor: "rgba(255,255,255,0.2)" }}>
                                 Vos décisions méritent la clarté. Soumettez une première situation pour générer votre synthèse personnalisée.
@@ -550,7 +558,7 @@ export default function DashboardMain() {
                             )}
                           </p>
                           {lastQuestions.length > 0 && (
-                            <div className="flex items-center gap-5 mt-7 pt-6 border-t border-white/[0.06]">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 mt-8 pt-6 border-t border-white/[0.06]">
                               {[
                                 { l: "Analyses", v: lastQuestions.length },
                                 { l: "Score moyen", v: `${animAvg}/100` },
@@ -558,10 +566,10 @@ export default function DashboardMain() {
                               ].map((s, i, arr) => (
                                 <div key={s.l} className="flex items-center gap-5">
                                   <div>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-white/20 mb-0.5">{s.l}</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-white/20 mb-1">{s.l}</p>
                                     <p className="text-lg font-bold text-white/55">{s.v}</p>
                                   </div>
-                                  {i < arr.length - 1 && <div className="h-7 w-px bg-white/[0.06]" />}
+                                  {i < arr.length - 1 && <div className="hidden sm:block h-7 w-px bg-white/[0.06]" />}
                                 </div>
                               ))}
                             </div>

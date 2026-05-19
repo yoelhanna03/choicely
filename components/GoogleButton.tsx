@@ -11,7 +11,7 @@ export default function GoogleButton() {
                  transition-all duration-300 hover:bg-white/10 hover:border-white/20 active:scale-[0.98]"
     >
       {/* Icône SVG Google officielle */}
-      <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
         <path
           fill="#EA4335"
           d="M12 5.04c1.65 0 3.13.57 4.3 1.69l3.22-3.22C17.58 1.63 15 1 12 1 7.35 1 3.4 3.65 1.5 7.5l3.86 3C6.27 7.59 8.93 5.04 12 5.04z"
