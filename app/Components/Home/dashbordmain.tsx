@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef, useSyncExternalStore, useCallback } from "react";
 import HandleAnalyse from "@/app/Components/Home/situationrequest";
 import ResultIA from "./result_ia";
+import WelcomeNewUser from "./WelcomeNewUser";
 
 function subscribe() { return () => {}; }
 
@@ -387,6 +388,14 @@ export default function DashboardMain() {
 
             {!showResult && !showIntro && (
               <>
+                {allScores.length === 0 && lastQuestions.length === 0 ? (
+                  // Nouveau compte - afficher le welcome
+                  <div className="py-12">
+                    <WelcomeNewUser onStartAnalysis={() => { setShowResult(false); setShowIntro(true); }} />
+                  </div>
+                ) : (
+                  // Compte existant - afficher le dashboard normal
+                  <>
                 {/* MINI STAT PILLS */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-10 stagger-1">
                   {[
@@ -579,6 +588,8 @@ export default function DashboardMain() {
                     </div>
                   </div>
                 </div>
+                  </>
+                )}
               </>
             )}
           </>
