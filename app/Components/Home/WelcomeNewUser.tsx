@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { Zap, Target, TrendingUp, Sparkles, ArrowRight } from "lucide-react";
+import { Zap, Target, TrendingUp, Sparkles, ArrowRight, Search, NotebookPen, ChartNoAxesCombined } from "lucide-react";
 
 interface WelcomeNewUserProps {
   onStartAnalysis: () => void;
@@ -122,19 +122,19 @@ export default function WelcomeNewUser({ onStartAnalysis }: WelcomeNewUserProps)
                 step: "01",
                 title: "Décrivez votre situation",
                 description: "Expliquez votre dilemme décisionnel ou la situation qui vous préoccupe",
-                icon: "📝"
+                icon: <NotebookPen size={20} />
               },
               {
                 step: "02",
                 title: "Recevez une analyse",
                 description: "Notre IA génère une analyse détaillée avec un score de qualité",
-                icon: "🔍"
+                icon: <Search size={20} />
               },
               {
                 step: "03",
                 title: "Consultez votre synthèse",
                 description: "Visualisez vos progrès et recevez des recommandations personnalisées",
-                icon: "📊"
+                icon: <ChartNoAxesCombined size={20} />
               },
             ].map((item, i) => (
               <div key={i} className="relative p-6 rounded-2xl border border-white/5 bg-white/2 backdrop-blur-sm hover:border-white/10 transition-colors">
@@ -152,7 +152,7 @@ export default function WelcomeNewUser({ onStartAnalysis }: WelcomeNewUserProps)
         </div>
 
         {/* STATS PREVIEW */}
-        <div className="relative rounded-2xl border border-white/5 bg-gradient-to-br from-white/5 to-transparent p-8 backdrop-blur-sm">
+        <div className="relative rounded-2xl border border-white/5 bg-linear-to-br from-white/5 to-transparent p-8 backdrop-blur-sm">
           <div className="grid md:grid-cols-3 gap-8 text-center">
             {[
               { value: "∞", label: "Analyses illimitées" },
