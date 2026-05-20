@@ -1,27 +1,27 @@
+// proxy.ts (à la racine du projet)
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
 export default auth((req) => {
-  const isLoggedIn = !!req.auth; // true si l'utilisateur est connecté, false sinon
-  const isOnLoginPage = req.nextUrl.pathname === "/auth/login";
-  const isOnDashboard = req.nextUrl.pathname.startsWith("/dashboard");
+  const isLoggedIn = !!req.auth; // true si connecté, false sinon
+  const url = req.nextUrl.clone();
 
-  // 1. Si l'utilisateur est DÉJÀ connecté et qu'il tente d'aller sur /auth/login
-  // On le redirige automatiquement vers le dashboard
-  if (isLoggedIn && isOnLoginPage) {
-    return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
+  // 1. Si l'utilisateur tente d'aller sur le Dashboard sans être connecté
+  if (url.pathname.startsWith("/dashboard") && !isLoggedIn) {
+    url.pathname = "/auth/login";
+    return NextResponse.redirect(url);
   }
 
-  // 2. Sécurité inverse : Si l'utilisateur n'est PAS connecté et tente d'aller sur le dashboard
-  // On le renvoie vers la page de login
-  if (!isLoggedIn && isOnDashboard) {
-    return NextResponse.redirect(new URL("/auth/login", req.nextUrl));
+  // 2. Si l'utilisateur est DÉJÀ connecté et tente d'aller sur le Login
+  if (url.pathname === "/auth/login" && isLoggedIn) {
+    url.pathname = "/dashboard";
+    return NextResponse.redirect(url);
   }
 
   return NextResponse.next();
 });
 
-// On indique à Next.js sur quelles routes le middleware doit s'exécuter
+// On applique le proxy uniquement sur les routes à surveiller
 export const config = {
   matcher: ["/dashboard/:path*", "/auth/login"],
 };
