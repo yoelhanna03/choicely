@@ -567,7 +567,7 @@ export default function DashboardMain() {
                             )}
                           </p>
                           {lastQuestions.length > 0 && (
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 mt-8 pt-6 border-t border-white/[0.06]">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 mt-8 pt-6 border-t border-white/6">
                               {[
                                 { l: "Analyses", v: lastQuestions.length },
                                 { l: "Score moyen", v: `${animAvg}/100` },
@@ -578,7 +578,7 @@ export default function DashboardMain() {
                                     <p className="text-[9px] font-bold uppercase tracking-widest text-white/20 mb-1">{s.l}</p>
                                     <p className="text-lg font-bold text-white/55">{s.v}</p>
                                   </div>
-                                  {i < arr.length - 1 && <div className="hidden sm:block h-7 w-px bg-white/[0.06]" />}
+                                  {i < arr.length - 1 && <div className="hidden sm:block h-7 w-px bg-white/6" />}
                                 </div>
                               ))}
                             </div>
@@ -600,7 +600,7 @@ export default function DashboardMain() {
           <div className="overlay-modal fixed inset-0 z-50 flex items-center justify-center p-6"
             style={{ background: "rgba(13,14,18,0.96)", backdropFilter: "blur(24px)" }}
           >
-            <div className="modal-content w-full max-w-5xl max-h-[88vh] overflow-y-auto rounded-3xl border border-white/[0.08]"
+            <div className="modal-content w-full max-w-5xl max-h-[88vh] overflow-y-auto rounded-3xl border border-white/8"
               style={{ background: "#0f1117" }}
             >
               <ResultIA data={dataIA} onBack={handleBack} />
