@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Situation manquante" }, { status: 400 });
     }
 
-    const modelName = "Qwen/Qwen2.5-72B-Instruct";
+    const modelName = "meta-llama/Meta-Llama-3.1-405B-Instruct";
 
     // 🔥 OPTIMISATION : On lance les 3 appels IA en PARALLÈLE pour éviter le timeout
     const [chatCompletion, summaryCompletion, scoreCompletion] = await Promise.all([

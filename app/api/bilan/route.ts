@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       .join("\n\n");
 
     const chatCompletion = await client.chat.completions.create({
-      model: "Qwen/Qwen2.5-72B-Instruct",
+      model: "meta-llama/Meta-Llama-3.1-405B-Instruct",
       messages: [
         {
           role: "system",

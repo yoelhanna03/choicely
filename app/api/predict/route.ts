@@ -29,7 +29,7 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "Qwen/Qwen2.5-72B-Instruct",
+          model: "meta-llama/Meta-Llama-3.1-405B-Instruct",
           messages: [
             {
               role: "system",
@@ -37,18 +37,31 @@ export async function POST(req: Request) {
             },
             {
               role: "user",
-              content: `Analyse la situation suivante : "${situation}"
+              content: `Analyse PROFESSIONNELLEMENT la situation suivante : "${situation}"
 
-Retourne UNIQUEMENT ce JSON :
+Retourne UNIQUEMENT ce JSON valide :
 {
+  "title": "Titre concis de la situation",
+  "summary": "Résumé exécutif en 1-2 phrases",
+  "overallScore": 6.5,
   "rows": [
-    { "condition": "Condition claire", "analyse": "Analyse détaillée", "conclusion": "Conclusion actionnable" }
+    { 
+      "id": "1",
+      "category": "Catégorie (ex: Marché, Interne, Externe)",
+      "factor": "Facteur clé identifié",
+      "impact": "Élevé|Moyen|Faible",
+      "urgency": "Critique|Haute|Normale|Basse",
+      "probability": 0.75,
+      "analysis": "Analyse détaillée de ce facteur",
+      "recommendation": "Action concrète recommandée",
+      "score": 7.5
+    }
   ],
   "nodes": [
-    { "id": "root", "label": "Situation centrale", "x": 400, "y": 50 },
-    { "id": "c1", "parent": "root", "label": "Facteur clé 1", "x": 100, "y": 220 },
-    { "id": "c2", "parent": "root", "label": "Facteur clé 2", "x": 400, "y": 220 },
-    { "id": "c3", "parent": "root", "label": "Facteur clé 3", "x": 700, "y": 220 }
+    { "id": "root", "label": "Situation centrale", "x": 400, "y": 50, "category": "Situation" },
+    { "id": "c1", "parent": "root", "label": "Facteur clé 1", "x": 100, "y": 220, "category": "Catégorie1", "impact": "Élevé" },
+    { "id": "c2", "parent": "root", "label": "Facteur clé 2", "x": 400, "y": 220, "category": "Catégorie2", "impact": "Moyen" },
+    { "id": "c3", "parent": "root", "label": "Facteur clé 3", "x": 700, "y": 220, "category": "Catégorie3", "impact": "Faible" }
   ]
 }`,
             },
@@ -80,7 +93,15 @@ Retourne UNIQUEMENT ce JSON :
     const parsed = JSON.parse(match[0]);
 
     return NextResponse.json({
-      table: JSON.stringify({ rows: parsed.rows }),
+      title: parsed.title || "Analyse stratégique",
+      summary: parsed.summary || "",
+      overallScore: parsed.overallScore || 0,
+      table: JSON.stringify({ 
+        rows: parsed.rows,
+        title: parsed.title,
+        summary: parsed.summary,
+        overallScore: parsed.overallScore
+      }),
       map: JSON.stringify({ nodes: parsed.nodes }),
     });
 
