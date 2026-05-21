@@ -145,8 +145,8 @@ export async function POST(req: Request) {
       data: {
         ia_prop: result,
         for_email: session.user.email,
-        question: summary, 
-        score: score
+        question: summary,
+        score: score,
       },
     });
 
@@ -163,6 +163,25 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("Erreur critique API Analyse:", error);
+
+    const message = String(error?.message ?? "").toLowerCase();
+    const isQuotaError =
+      error?.status === 402 ||
+      message.includes("depleted") ||
+      message.includes("included credits") ||
+      message.includes("quota");
+
+    if (isQuotaError) {
+      return NextResponse.json(
+        {
+          error:
+            "Le quota de l'API est épuisé. Merci de réessayer plus tard ou de soutenir le projet via /donate.",
+          detail: error?.message,
+        },
+        { status: 402 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Une erreur est survenue lors du traitement.", details: error?.message },
       { status: 500 }

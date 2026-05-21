@@ -94,6 +94,25 @@ export async function POST(req: Request) {
       message: error?.message,
       stack: error?.stack,
     });
+
+    const message = String(error?.message ?? "").toLowerCase();
+    const isQuotaError =
+      error?.status === 402 ||
+      message.includes("depleted") ||
+      message.includes("included credits") ||
+      message.includes("quota");
+
+    if (isQuotaError) {
+      return NextResponse.json(
+        {
+          error:
+            "Le quota de l'API est épuisé. Merci de réessayer plus tard ou de soutenir le projet via /donate.",
+          detail: error?.message,
+        },
+        { status: 402 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Erreur lors de la génération du bilan.", detail: error?.message },
       { status: 500 }
