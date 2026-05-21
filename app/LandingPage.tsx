@@ -124,7 +124,7 @@ function Metric({ value, label }: MetricProps) {
       >
         {value}
       </span>
-      <span className="text-[10.5px] font-light uppercase tracking-[0.1em] text-[rgba(237,234,248,0.32)]">
+      <span className="text-[10.5px] font-light uppercase tracking-widest text-[rgba(237,234,248,0.32)]">
         {label}
       </span>
     </div>
@@ -417,21 +417,21 @@ export default function Page() {
         className="pointer-events-none fixed inset-0 z-0 h-full w-full opacity-30"
       />
 
-      <div className="relative z-10 mx-auto max-w-[1060px] px-10">
+      <div className="relative z-10 mx-auto max-w-265 px-10">
 
         {/* ── HERO ─────────────────────────────────────────────────────── */}
         <section className="relative flex min-h-screen flex-col items-center justify-center px-8 pb-20 pt-24 text-center">
 
           {/* Badge */}
           <div className="anim-0 mb-9 inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.11)] bg-[rgba(91,79,232,0.08)] px-4 py-1.5">
-            <span className="dot h-[5px] w-[5px] rounded-full bg-[#00C8D7]" />
+            <span className="dot h-1.25 w-1.25 rounded-full bg-[#00C8D7]" />
             <span className="text-[11px] uppercase tracking-[0.12em] text-[rgba(237,234,248,0.5)]">
               Analyse décisionnelle par IA
             </span>
           </div>
 
           {/* Title */}
-          <h1 className="anim-1 font-cormorant mb-6 text-[clamp(54px,8.5vw,100px)] font-light leading-[1.03] tracking-[-0.025em]">
+          <h1 className="anim-1 font-cormorant mb-6 text-[clamp(54px,8.5vw,100px)] font-light leading-[1.03] tracking-tight">
             Décidez avec{" "}
             <em
               style={{
@@ -447,7 +447,7 @@ export default function Page() {
           </h1>
 
           {/* Subtitle */}
-          <p className="anim-2 mb-11 max-w-[480px] text-[15px] font-light leading-[1.75] text-[rgba(237,234,248,0.50)]">
+          <p className="anim-2 mb-11 max-w-120 text-[15px] font-light leading-[1.75] text-[rgba(237,234,248,0.50)]">
             Choicely décompose vos situations complexes, révèle les scénarios cachés et illumine ce
             qui compte vraiment — en quelques secondes.
           </p>
@@ -481,7 +481,7 @@ export default function Page() {
         <Divider />
 
         {/* ── STEPS ────────────────────────────────────────────────────── */}
-        <section className="reveal py-[5.5rem]">
+        <section className="reveal py-22">
           <div className="mb-14 text-center">
             <SectionLabel>Processus</SectionLabel>
             <h2 className="font-cormorant text-[clamp(30px,4vw,46px)] font-light leading-[1.18] tracking-[-0.02em]">
@@ -499,10 +499,10 @@ export default function Page() {
         <Divider />
 
         {/* ── SPLIT ────────────────────────────────────────────────────── */}
-        <section className="reveal py-[5.5rem]">
+        <section className="reveal py-22">
           <div className="grid grid-cols-2 items-center gap-20">
             {/* Crystal canvas */}
-            <div className="relative aspect-[4/3] overflow-hidden rounded-[22px] border border-[rgba(255,255,255,0.11)] bg-[#0F0F17]">
+            <div className="relative aspect-4/3 overflow-hidden rounded-[22px] border border-[rgba(255,255,255,0.11)] bg-[#0F0F17]">
               <canvas ref={crystalRef} className="absolute inset-0 h-full w-full" />
             </div>
 
@@ -535,7 +535,7 @@ export default function Page() {
         <Divider />
 
         {/* ── FEATURES ─────────────────────────────────────────────────── */}
-        <section className="reveal py-[5.5rem]">
+        <section className="reveal py-22">
           <div className="mb-14 text-center">
             <SectionLabel>Fonctionnalités</SectionLabel>
             <h2 className="font-cormorant text-[clamp(30px,4vw,46px)] font-light leading-[1.18] tracking-[-0.02em]">
@@ -552,9 +552,41 @@ export default function Page() {
 
         <Divider />
 
+        {/* ── DONATION CTA ────────────────────────────────────────────── */}
+        <section className="reveal py-20">
+          <div className="relative overflow-hidden rounded-[28px] border border-[rgba(255,255,255,0.15)] bg-linear-to-br from-[#5B4FE8]/8 to-[#00C8D7]/8 px-8 py-16 md:px-12 md:py-20">
+            {/* Glow */}
+            <div
+              className="pointer-events-none absolute -right-32 top-1/2 h-80 w-96 -translate-y-1/2"
+              style={{
+                background: "radial-gradient(ellipse,rgba(0,200,215,0.15),transparent 60%)",
+              }}
+            />
+            <div className="relative max-w-3xl">
+              <div className="mb-2 inline-block rounded-lg bg-[#5B4FE8]/20 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider text-[#00C8D7]">
+               Soutenir Choicely
+              </div>
+              <h2 className="text-3xl md:text-4xl font-light mb-4">
+                Aidez-nous à continuer
+              </h2>
+              <p className="text-[15px] font-light leading-[1.7] text-[rgba(237,234,248,0.60)] mb-8 max-w-lg">
+                Choicely fonctionne grâce aux analyses IA coûteuses. Vos dons nous permettent d'améliorer continuellement le service et de le rendre plus accessible.
+              </p>
+              <Link
+                href="/donate"
+                className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-[#5B4FE8] to-[#00C8D7] px-8 py-3.5 text-[13.5px] font-normal text-white transition-all duration-200 hover:shadow-lg hover:shadow-[#5B4FE8]/30 hover:-translate-y-0.5"
+              >
+               Faire un don
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <Divider />
+
         {/* ── CTA ──────────────────────────────────────────────────────── */}
-        <section className="reveal pb-24 pt-[5rem]">
-          <div className="relative overflow-hidden rounded-[28px] border border-[rgba(255,255,255,0.07)] bg-[#0F0F17] px-8 py-[4.5rem] text-center">
+        <section className="reveal pb-24 pt-20">
+          <div className="relative overflow-hidden rounded-[28px] border border-[rgba(255,255,255,0.07)] bg-[#0F0F17] px-8 py-18 text-center">
             {/* Glow */}
             <div
               className="pointer-events-none absolute left-1/2 top-0 h-48 w-96 -translate-x-1/2 -translate-y-16"
@@ -587,36 +619,6 @@ export default function Page() {
             >
               Commencer maintenant — c&apos;est gratuit
             </Link>
-          </div>
-        </section>
-
-        <Divider />
-
-        {/* ── DONATION CTA ────────────────────────────────────────────── */}
-        <section className="reveal pb-24 pt-[5rem]">
-          <div className="relative overflow-hidden rounded-[28px] border border-[rgba(255,255,255,0.1)] bg-gradient-to-br from-[#5B4FE8]/5 to-[#00C8D7]/5 px-8 py-[3rem]">
-            {/* Glow */}
-            <div
-              className="pointer-events-none absolute right-0 top-1/2 h-64 w-96 -translate-y-1/2 translate-x-24"
-              style={{
-                background: "radial-gradient(ellipse,rgba(0,200,215,0.12),transparent 60%)",
-              }}
-            />
-            <div className="relative max-w-2xl">
-              <h3 className="text-2xl font-light mb-2">
-                Soutenir le développement de <span className="text-[#00C8D7]">Choicely</span>
-              </h3>
-              <p className="text-[14px] font-light text-[rgba(237,234,248,0.50)] mb-6">
-                Vos analyses IA consomment des ressources. Contribuez pour débloquer plus de crédits et nous aider à améliorer continuellement le service.
-              </p>
-              <Link
-                href="/donate"
-                className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.2)] px-8 py-3.5 text-[13.5px] font-normal text-white transition-all duration-200 hover:bg-[rgba(255,255,255,0.05)] hover:border-[rgba(255,255,255,0.3)]"
-              >
-                <span>❤️</span>
-                Faire un don
-              </Link>
-            </div>
           </div>
         </section>
 

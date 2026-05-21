@@ -1,60 +1,38 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Heart, AlertCircle, CheckCircle } from "lucide-react";
+import { Heart, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Sidebar from "@/app/Components/Home/sidebar";
 
-interface DonationTier {
-  id: string;
-  amount: number;
-  credits: number;
-  label: string;
-  description: string;
-  popular?: boolean;
-}
-
-const DONATION_TIERS: DonationTier[] = [
-  {
-    id: "tier-5",
-    amount: 5,
-    credits: 500,
-    label: "Starter",
-    description: "Essayez le service"
-  },
-  {
-    id: "tier-15",
-    amount: 15,
-    credits: 2000,
-    label: "Standard",
-    description: "Le choix populaire",
-    popular: true
-  },
-  {
-    id: "tier-50",
-    amount: 50,
-    credits: 10000,
-    label: "Premium",
-    description: "L'accès illimité"
-  }
-];
-
 export default function DonatePage() {
-  const router = useRouter();
-  const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [customAmount, setCustomAmount] = useState<string>("10");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const { data: session } = useSession();
 
-  const handleDonate = async (amount: number) => {
+  const handleDonate = async () => {
     try {
       setLoading(true);
       setError(null);
+      setSuccess(false);
+
+      const amount = parseFloat(customAmount);
+
+      if (!amount || amount < 1 || isNaN(amount)) {
+        setError("Veuillez entrer un montant valide (minimum 1$)");
+        return;
+      }
 
       const response = await fetch("/api/billing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount })
+        body: JSON.stringify({ 
+          amount,
+          email: session?.user?.email 
+        })
       });
 
       const data = await response.json();
@@ -77,13 +55,33 @@ export default function DonatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F0F17] text-white">
-      <Sidebar />
-      
-      <div className="pt-24 pb-20 px-6">
-        <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen text-white">
+      {session && <Sidebar />}
+      <div className={`${session ? "pt-24" : "pt-12"} pb-20 px-6`}>
+        <div className="max-w-2xl mx-auto">
+          {/* Back Button */}
+          <div className="mb-8">
+            {session ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[rgba(255,255,255,0.1)] text-[13.5px] text-[rgba(237,234,248,0.70)] hover:bg-[rgba(255,255,255,0.05)] hover:border-[rgba(255,255,255,0.2)] transition-all"
+              >
+                <ArrowLeft size={16} />
+                Tableau de bord
+              </Link>
+            ) : (
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[rgba(255,255,255,0.1)] text-[13.5px] text-[rgba(237,234,248,0.70)] hover:bg-[rgba(255,255,255,0.05)] hover:border-[rgba(255,255,255,0.2)] transition-all"
+              >
+                <ArrowLeft size={16} />
+                Retour
+              </Link>
+            )}
+          </div>
+
           {/* Header */}
-          <div className="mb-16 text-center">
+          <div className="mb-12 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#5B4FE8]/10 border border-[#5B4FE8]/20 mb-6">
               <Heart className="w-8 h-8 text-[#5B4FE8]" />
             </div>
@@ -95,125 +93,111 @@ export default function DonatePage() {
                 backgroundClip: "text"
               }}>Choicely</em>
             </h1>
-            <p className="text-[rgba(237,234,248,0.60)] text-lg max-w-2xl mx-auto">
-              Vos crédits pour analyser vos choix avec l'IA. Chaque don soutient le développement continu de Choicely.
+            <p className="text-[rgba(237,234,248,0.60)] text-lg">
+              Aidez-nous à continuer le développement en faisant un don. Chaque contribution compte.
             </p>
           </div>
+
+          {/* Alert si succès */}
+          {success && (
+            <div className="mb-12 p-4 rounded-xl bg-green-500/10 border border-green-500/30 flex items-start gap-3">
+              <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+              <p className="text-green-200">Merci pour votre don! Redirection en cours...</p>
+            </div>
+          )}
 
           {/* Alert si erreur */}
           {error && (
             <div className="mb-12 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
               <p className="text-red-200">{error}</p>
             </div>
           )}
 
-          {/* Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-            {DONATION_TIERS.map((tier) => (
-              <div
-                key={tier.id}
-                className={`relative group rounded-2xl border transition-all duration-300 p-8 ${
-                  tier.popular
-                    ? "border-[#5B4FE8]/60 bg-[#5B4FE8]/5 scale-105 shadow-2xl shadow-[#5B4FE8]/20"
-                    : "border-[rgba(255,255,255,0.1)] bg-[#0F0F17] hover:border-[rgba(255,255,255,0.2)] hover:bg-[#1A1A25]"
-                }`}
-              >
-                {/* Popular Badge */}
-                {tier.popular && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <span className="px-4 py-1 bg-gradient-to-r from-[#5B4FE8] to-[#00C8D7] rounded-full text-[11px] font-medium text-white">
-                      ⭐ Populaire
-                    </span>
-                  </div>
-                )}
-
-                {/* Tier Label */}
-                <h3 className="text-xl font-light mb-1">{tier.label}</h3>
-                <p className="text-sm text-[rgba(237,234,248,0.50)] mb-6">{tier.description}</p>
-
-                {/* Price */}
-                <div className="mb-8">
-                  <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-4xl font-light">${tier.amount}</span>
-                    <span className="text-[rgba(237,234,248,0.50)] text-sm">/une fois</span>
-                  </div>
-                  <div className="text-[#00C8D7] font-light">
-                    {tier.credits.toLocaleString()} crédits
-                  </div>
-                </div>
-
-                {/* Features */}
-                <div className="space-y-3 mb-8">
-                  <div className="flex items-center gap-2 text-sm text-[rgba(237,234,248,0.70)]">
-                    <CheckCircle className="w-4 h-4 text-[#00C8D7] flex-shrink-0" />
-                    <span>Analyse IA illimitée</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-[rgba(237,234,248,0.70)]">
-                    <CheckCircle className="w-4 h-4 text-[#00C8D7] flex-shrink-0" />
-                    <span>Crédits cumulatifs</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-[rgba(237,234,248,0.70)]">
-                    <CheckCircle className="w-4 h-4 text-[#00C8D7] flex-shrink-0" />
-                    <span>Accès prioritaire</span>
-                  </div>
-                </div>
-
-                {/* CTA Button */}
-                <button
-                  onClick={() => handleDonate(tier.amount)}
-                  disabled={loading}
-                  className={`w-full py-3 rounded-lg font-normal text-[13.5px] transition-all duration-200 ${
-                    tier.popular
-                      ? "bg-gradient-to-r from-[#5B4FE8] to-[#00C8D7] text-white hover:shadow-lg hover:shadow-[#5B4FE8]/30 disabled:opacity-50"
-                      : "border border-[rgba(255,255,255,0.2)] text-white hover:bg-[rgba(255,255,255,0.05)] disabled:opacity-50"
-                  }`}
-                >
-                  {loading && selectedTier === tier.id ? "Traitement..." : "Faire un don"}
-                </button>
+          {/* Donation Form */}
+          <div className="rounded-2xl border border-[rgba(255,255,255,0.1)] bg-[#0F0F17] p-8 mb-12">
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-[rgba(237,234,248,0.80)] mb-3">
+                Montant du don (USD)
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-light text-[rgba(237,234,248,0.60)]">$</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="0.01"
+                  value={customAmount}
+                  onChange={(e) => setCustomAmount(e.target.value)}
+                  placeholder="Entrez le montant"
+                  className="flex-1 bg-[#1A1A25] border border-[rgba(255,255,255,0.1)] rounded-lg px-4 py-3 text-white placeholder-[rgba(237,234,248,0.30)] focus:outline-none focus:border-[#00C8D7] focus:ring-1 focus:ring-[#00C8D7]/30"
+                />
               </div>
-            ))}
+              <p className="text-xs text-[rgba(237,234,248,0.40)] mt-2">
+                Minimum: 1$ • Aucune limite maximum
+              </p>
+            </div>
+
+            {/* Quick Amount Buttons */}
+            <div className="mb-8">
+              <p className="text-xs font-medium text-[rgba(237,234,248,0.60)] mb-3 uppercase tracking-wider">
+                Montants suggérés
+              </p>
+              <div className="grid grid-cols-4 gap-3">
+                {[5, 10, 25, 50].map((amount) => (
+                  <button
+                    key={amount}
+                    onClick={() => setCustomAmount(amount.toString())}
+                    className={`py-2 rounded-lg text-sm font-normal transition-all ${
+                      customAmount === amount.toString()
+                        ? "bg-linear-to-r from-[#5B4FE8] to-[#00C8D7] text-white"
+                        : "border border-[rgba(255,255,255,0.1)] text-[rgba(237,234,248,0.70)] hover:border-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.05)]"
+                    }`}
+                  >
+                    ${amount}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <button
+              onClick={handleDonate}
+              disabled={loading}
+              className="w-full py-3 rounded-lg font-normal text-[13.5px] bg-white text-black transition-all duration-200 hover:shadow-lg hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Traitement..." : `Faire un don de $${customAmount}`}
+            </button>
           </div>
 
           {/* FAQ Section */}
-          <div className="max-w-2xl mx-auto">
+          <div className="mb-12">
             <h2 className="text-2xl font-light mb-8 text-center">Questions fréquentes</h2>
             <div className="space-y-6">
               <div className="rounded-xl border border-[rgba(255,255,255,0.1)] p-6 hover:border-[rgba(255,255,255,0.2)] transition-colors">
-                <h3 className="font-normal text-[15px] mb-2">Les crédits expirent-ils ?</h3>
+                <h3 className="font-normal text-[15px] mb-2">Qu'est-ce que mon don finance ?</h3>
                 <p className="text-[13.5px] text-[rgba(237,234,248,0.60)]">
-                  Non, vos crédits sont cumulatifs et n'expirent jamais. Ils restent dans votre compte indéfiniment.
+                  Vos dons soutiennent le développement continu de Choicely, l'amélioration des analyses IA, et l'infrastructure technique.
                 </p>
               </div>
               <div className="rounded-xl border border-[rgba(255,255,255,0.1)] p-6 hover:border-[rgba(255,255,255,0.2)] transition-colors">
-                <h3 className="font-normal text-[15px] mb-2">Puis-je faire plusieurs dons ?</h3>
-                <p className="text-[13.5px] text-[rgba(237,234,248,0.60)]">
-                  Oui, vous pouvez faire plusieurs dons. Les crédits s'ajoutent à votre compte existant.
-                </p>
-              </div>
-              <div className="rounded-xl border border-[rgba(255,255,255,0.1)] p-6 hover:border-[rgba(255,255,255,0.2)] transition-colors">
-                <h3 className="font-normal text-[15px] mb-2">Ma donation est-elle sécurisée ?</h3>
+                <h3 className="font-normal text-[15px] mb-2">Mon don est-il sécurisé ?</h3>
                 <p className="text-[13.5px] text-[rgba(237,234,248,0.60)]">
                   Oui, nous utilisons Stripe pour traiter les paiements de manière sécurisée. Aucun détail bancaire n'est stocké sur nos serveurs.
                 </p>
               </div>
               <div className="rounded-xl border border-[rgba(255,255,255,0.1)] p-6 hover:border-[rgba(255,255,255,0.2)] transition-colors">
-                <h3 className="font-normal text-[15px] mb-2">Comment puis-je utiliser mes crédits ?</h3>
+                <h3 className="font-normal text-[15px] mb-2">Dois-je être connecté pour faire un don ?</h3>
                 <p className="text-[13.5px] text-[rgba(237,234,248,0.60)]">
-                  Accédez au dashboard et effectuez une analyse. Les crédits sont déduits automatiquement pour chaque requête IA.
+                  Non, vous pouvez faire un don sans compte. Si vous avez un compte Choicely, nous pouvons le noter dans vos records.
+                </p>
+              </div>
+              <div className="rounded-xl border border-[rgba(255,255,255,0.1)] p-6 hover:border-[rgba(255,255,255,0.2)] transition-colors">
+                <h3 className="font-normal text-[15px] mb-2">Puis-je faire plusieurs dons ?</h3>
+                <p className="text-[13.5px] text-[rgba(237,234,248,0.60)]">
+                  Oui, vous pouvez faire autant de dons que vous le souhaitez. Chaque contribution nous aide à améliorer le service.
                 </p>
               </div>
             </div>
-          </div>
-
-          {/* Back Link */}
-          <div className="mt-16 text-center">
-            <Link
-              href="/dashboard"
-              className="text-[13.5px] text-[#00C8D7] hover:text-[#5B4FE8] transition-colors"
-            >
-              ← Retour au tableau de bord
-            </Link>
           </div>
         </div>
       </div>

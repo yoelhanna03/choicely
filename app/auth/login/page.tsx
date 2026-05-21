@@ -111,11 +111,6 @@ export default function LoginPage() {
           <div className="pt-1">
             <GoogleButton />
           </div>
-
-          <p className="text-[10px] text-white/20 max-w-xs mx-auto leading-relaxed">
-            En continuant, vous acceptez nos conditions d&apos;utilisation et notre politique de confidentialité.
-          </p>
-
           <button
             type="submit"
             disabled={loading}

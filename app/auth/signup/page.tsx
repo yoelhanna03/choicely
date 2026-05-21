@@ -10,9 +10,16 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [show, setShow] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    
+    if (!acceptedTerms) {
+      setErrorMsg("Veuillez accepter les conditions d'utilisation et la politique de confidentialité.");
+      return;
+    }
+
     setLoading(true);
     setErrorMsg("");
 
@@ -93,14 +100,34 @@ export default function SignupPage() {
             </div>
           </div>
 
+          <div className="flex items-start gap-3 py-4">
+            <input
+              type="checkbox"
+              id="terms"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-1 w-4 h-4 rounded border border-white/20 bg-black/20 cursor-pointer accent-white"
+            />
+            <label htmlFor="terms" className="text-xs text-white/60 leading-relaxed cursor-pointer">
+              J'accepte les{" "}
+              <Link href="/cgu" target="_blank" className="text-white hover:underline">
+                Conditions Générales d'Utilisation
+              </Link>
+              {" "}et la{" "}
+              <Link href="/privacy" target="_blank" className="text-white hover:underline">
+                Politique de Confidentialité
+              </Link>
+            </label>
+          </div>
+
           <div className="pt-1">
             <GoogleButton />
           </div>
 
           <button
             type="submit"
-            disabled={loading}
-            className="mt-2 bg-white text-black font-medium p-3 rounded-lg hover:bg-white/90 transition disabled:opacity-40"
+            disabled={loading || !acceptedTerms}
+            className="mt-4 bg-white text-black font-medium p-3 rounded-lg hover:bg-white/90 transition disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? "Création..." : "Créer un compte"}
           </button>

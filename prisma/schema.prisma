@@ -19,6 +19,8 @@ model User {
   updatedAt     DateTime  @updatedAt
   accounts Account[]
   sessions Session[]
+  subscription Subscription?
+  credits Credit?
 }
 
 model Account {
@@ -76,4 +78,24 @@ model Question {
   question  String
   score     Int      @default(0)
   createdAt DateTime @default(now())
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier      String   @default("free") // free, pro, premium
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime? // Pour les abonnements payants
+}
+
+model Credit {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance       Int      @default(50) // Crédits gratuits au départ
+  lastResetAt   DateTime @default(now()) // Pour reset hebdo des free tiers
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
