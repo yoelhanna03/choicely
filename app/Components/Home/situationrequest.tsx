@@ -27,8 +27,8 @@ export default function IntroCard({ onCancel, onSuccess }: IntroCardProps) {
 
       const data = await res.json();
       
-      // On envoie le résultat au parent
-      onSuccess(data.result);
+      // On envoie le résultat complet au parent (avec score et summary)
+      onSuccess(data);
     } catch (error) {
       console.error("Erreur lors de l'analyse:", error);
     } finally {

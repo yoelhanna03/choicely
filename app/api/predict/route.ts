@@ -29,7 +29,7 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "meta-llama/Meta-Llama-3.1-405B-Instruct",
+          model: "deepseek-ai/DeepSeek-V4-Pro:novita",
           messages: [
             {
               role: "system",

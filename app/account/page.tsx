@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { User, Mail, Shield, Calendar, KeyRound, Trash2 } from "lucide-react";
 import Sidebar from "../Components/Home/sidebar";
 import { AlertDialogDestructive } from "@/components/ui/AlertDeleteAccount";
@@ -34,10 +35,11 @@ export default function AccountPage() {
             <div className="md:col-span-1 p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl flex flex-col items-center justify-center text-center space-y-4">
               <div className={`w-20 h-20 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.15)] ${isLoading ? "animate-pulse" : ""}`}>
                 {!isLoading && session?.user?.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img 
+                  <Image 
                     src={session.user.image} 
                     alt="Avatar" 
+                    width={80}
+                    height={80}
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (

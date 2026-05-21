@@ -13,6 +13,7 @@ export async function GET(req: Request) {
 
   const verificationToken = await db.verificationToken.findUnique({
     where: { token },
+    select: { identifier: true, expires: true },
   });
 
   if (!verificationToken || verificationToken.identifier !== email) {

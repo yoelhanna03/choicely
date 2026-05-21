@@ -188,6 +188,7 @@ export default function DashboardMain() {
       ]);
       if (bilanRes.ok) {
         const d = await bilanRes.json();
+        console.log("[Dashboard] Bilan reçu:", d);
         if (d.bilan) setBilanIA(d.bilan);
       }
       if (questRes.ok) {
@@ -198,7 +199,9 @@ export default function DashboardMain() {
         const d = await scoresRes.json();
         setAllScores(d.scores || []);
       }
-    } catch {}
+    } catch (err) {
+      console.error("[Dashboard] Erreur refreshData:", err);
+    }
   }, []);
 
   useEffect(() => {
@@ -213,6 +216,11 @@ export default function DashboardMain() {
   }, []);
 
   const handleAnalysisSuccess = async (result: any) => {
+    // result contient { result, summary, score, questionId }
+    const analysiText = result?.result || result; // Support legacy string
+    const question = result?.summary || "Question";
+    const score = result?.score ?? 50;
+    
     setDataIA(result);
     setShowIntro(false);
     setShowResult(true);
@@ -222,12 +230,13 @@ export default function DashboardMain() {
       const res = await fetch("/api/bilan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ analyseData: result }),
+        body: JSON.stringify({ analyseData: analysiText, question, score }),
       });
       const data = await res.json();
       setBilanIA(data.bilan);
       await refreshData();
-    } catch {
+    } catch (err) {
+      console.error("[Dashboard] Erreur bilan:", err);
       setBilanIA("Erreur de génération du bilan.");
     } finally {
       setIsProcessingBilan(false);
@@ -380,7 +389,7 @@ export default function DashboardMain() {
                 >
                   + Nouvelle analyse
                 </button>
-                <div className="h-11 w-11 rounded-2xl border border-white/8 bg-white/4 overflow-hidden flex-shrink-0">
+                <div className="h-11 w-11 rounded-2xl border border-white/8 bg-white/4 overflow-hidden shrink-0">
                   <img src="/favicon.ico" alt="avatar" className="h-full w-full object-cover opacity-60" />
                 </div>
               </div>
@@ -403,7 +412,7 @@ export default function DashboardMain() {
                     { label: "Meilleur score", value: bestScore ? `${bestScore}/100` : "—", color: "#34d399" },
                     { label: "Tendance", value: avgScore >= 75 ? "↑ Positive" : avgScore >= 50 ? "→ Stable" : avgScore > 0 ? "↓ À revoir" : "—", color: avgScore >= 75 ? "#34d399" : avgScore >= 50 ? "#60a5fa" : "#f87171" },
                   ].map((s, i) => (
-                    <div key={i} className="flex items-center gap-2 px-4 py-3 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.03] transition-colors">
+                    <div key={i} className="flex items-center gap-2 px-4 py-3 rounded-xl border border-white/6 bg-white/2 hover:bg-white/3 transition-colors">
                       <span className="text-[10px] font-semibold uppercase tracking-widest text-white/25">{s.label}</span>
                       <span className="text-[13px] font-bold ml-auto" style={{ color: s.color }}>{s.value}</span>
                     </div>
@@ -414,7 +423,7 @@ export default function DashboardMain() {
                 <div className="mb-10 stagger-2">
                   <div className="flex items-center gap-2 mb-5">
                     <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/30">Dernières analyses</span>
-                    <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
+                    <div className="flex-1 h-px bg-linear-to-r from-white/10 to-transparent" />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {(lastQuestions.length === 0 ? emptyCards : lastQuestions).map((item, i) => {
@@ -439,18 +448,18 @@ export default function DashboardMain() {
                                   color: q.score >= 75 ? "#34d399" : q.score >= 50 ? "#60a5fa" : "#f87171",
                                   border: `0.5px solid ${q.score >= 75 ? "rgba(52,211,153,0.2)" : q.score >= 50 ? "rgba(96,165,250,0.2)" : "rgba(248,113,113,0.2)"}`,
                                 }}>
-                                  {q.score >= 75 ? "✓ Fort" : q.score >= 50 ? "~ Moyen" : "↓ Faible"}
+                                  {q.score >= 75 ? "✓ Bien" : q.score >= 50 ? "~ Moyen" : "↓ Faible"}
                                 </span>
                               )}
                             </div>
                             {q ? <ScoreArc score={q.score} /> : (
-                              <div className="w-12 h-12 rounded-full border-2 border-white/5 flex items-center justify-center flex-shrink-0">
+                              <div className="w-12 h-12 rounded-full border-2 border-white/5 flex items-center justify-center shrink-0">
                                 <span className="text-white/10 text-xs">—</span>
                               </div>
                             )}
                           </div>
                           {q ? (
-                            <p className="text-[13px] text-white/65 leading-relaxed font-medium line-clamp-3">{q.question}</p>
+                            <p className="text-[13px] text-white leading-relaxed font-medium line-clamp-3">{q.question || "Sans titre"}</p>
                           ) : (
                             <div className="space-y-2">
                               <div className="skeleton h-3 w-full" />

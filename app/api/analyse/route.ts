@@ -1,9 +1,10 @@
+// app/api/analyse/route.ts
 import { NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60; // Cache 60 secondes pour les questions
 
 const client = new OpenAI({
   baseURL: "https://router.huggingface.co/v1",
@@ -21,6 +22,7 @@ export async function GET() {
       where: { by_email: session.user.email },
       orderBy: { createdAt: "desc" },
       take: 3,
+      select: { id: true, question: true, score: true, createdAt: true },
     });
 
     return NextResponse.json({ questions });
@@ -44,7 +46,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Situation manquante" }, { status: 400 });
     }
 
-    const modelName = "meta-llama/Meta-Llama-3.1-405B-Instruct";
+    const modelName = "deepseek-ai/DeepSeek-V4-Pro:novita";
 
     // 🔥 OPTIMISATION : On lance les 3 appels IA en PARALLÈLE pour éviter le timeout
     const [chatCompletion, summaryCompletion, scoreCompletion] = await Promise.all([
@@ -61,7 +63,7 @@ export async function POST(req: Request) {
             content: `Situation : ${situation}\nChoix : ${choice || "Aucun"}\n\nAnalyse et conseils :`,
           },
         ],
-        max_tokens: 800,
+        max_tokens: 1200,
       }),
 
       // 2️⃣ Résumé court
@@ -70,14 +72,14 @@ export async function POST(req: Request) {
         messages: [
           {
             role: "system",
-            content: "Résume cette question en maximum 6 mots. Donne juste un titre court. Pas de phrases complètes (quelque chose de simple)."
+            content: "Résume cette question en maximum 6 mots. Donne juste un titre court. Pas de phrases complètes (quelque chose de simple). Donne des titres général: pas de verbe conjugué, pas de pronom personnel. "
           },
           {
             role: "user",
             content: situation,
           },
         ],
-        max_tokens: 20,
+        max_tokens: 50,
       }),
 
       // 3️⃣ Score d'importance
@@ -86,32 +88,64 @@ export async function POST(req: Request) {
         messages: [
           {
             role: "system",
-            content: "Analyse cette question et retourne un score entre 0 et 100 indiquant à quel point c'est une bonne chose ou une bonne habitude. Retourne UNIQUEMENT le nombre brut, sans texte autour, sans markdown.PS : si par exemple le score est de 50 retourne quelque chose de autor comme 49 ou 51 ou encore 48 ou 52."
+            content: "Tu dois retourner UNIQUEMENT un nombre entre 0 et 100 (0=très mauvais, 50=moyen, 100=excellent). Ne retourne que le nombre, rien d'autre. Pas de texte, pas d'explication, pas de markdown. Juste le chiffre.Si par exemple ton score est de 50 retourne quelque chose comme 49, 51, 52, 48."
           },
           {
             role: "user",
-            content: `Situation : ${situation}\nChoix : ${choice || "Aucun"}`,
+            content: `Situation : ${situation}\nChoix : ${choice || "Aucun"}\n\nDonne un score entre 0 et 100:`,
           },
         ],
-        max_tokens: 10,
+        max_tokens: 300,
       })
     ]);
 
     // Extraction des données de manière sécurisée
     const result = chatCompletion.choices[0]?.message?.content ?? "";
-    const summary = summaryCompletion.choices[0]?.message?.content?.trim().replace(/["']/g, "") ?? "Résumé indisponible";
     
-    // Nettoyage robuste du score
-    const scoreText = scoreCompletion.choices[0]?.message?.content ?? "50";
-    const scoreMatch = scoreText.match(/\d+/);
-    const score = scoreMatch ? Math.min(100, Math.max(0, parseInt(scoreMatch[0], 10))) : 50;
+    // 🧽 NETTOYAGE SUMMARY - Enlever les balises <think> de DeepSeek
+    let summaryRaw = summaryCompletion.choices[0]?.message?.content?.trim() ?? "";
+    console.log("[API /analyse] Summary RAW:", { raw: summaryRaw.slice(0, 100) });
+    
+    if (summaryRaw.includes("</think>")) {
+      const parts = summaryRaw.split("</think>");
+      summaryRaw = parts[parts.length - 1].trim();
+    }
+    
+    // Nettoyage et fallback intelligent
+    let summary = summaryRaw.replace(/["']/g, "").trim();
+    if (!summary || summary.length < 2) {
+      // Fallback: prendre les 6 premiers mots de la situation
+      summary = situation.split(" ").slice(0, 6).join(" ") || "Question sans titre";
+    }
+    console.log("[API /analyse] Summary FINAL:", { summary });
+    
+    // 🧽 NETTOYAGE SÉCURISÉ DU SCORE (Gestion de la chaîne de pensée / <think> de DeepSeek)
+    let scoreText = scoreCompletion.choices[0]?.message?.content?.trim() ?? "50";
 
-    // 4️⃣ Sauvegardes en Base de données (exécutées l'une après l'autre pour garantir la cohérence)
+    // Si DeepSeek a inclus ses balises de réflexion, on ne garde que ce qui est APRES
+    if (scoreText.includes("</think>")) {
+      const parts = scoreText.split("</think>");
+      scoreText = parts[parts.length - 1].trim();
+    }
+
+    // On extrait le tout premier groupe de chiffres trouvé dans le texte restant
+    const match = scoreText.match(/\d+/); 
+    
+    let score = 50; // Score par défaut en cas de réponse totalement vide/invalide de l'IA
+    if (match) {
+      const parsedScore = parseInt(match[0], 10);
+      // On bride le score pour qu'il soit impérativement compris entre 0 et 100
+      score = Math.min(100, Math.max(0, parsedScore));
+    }
+
+    console.log("[API /analyse] Données créées:", { summary, score });
+
+    // 4️⃣ Sauvegardes en Base de données
     await db.proposition.create({
       data: {
         ia_prop: result,
         for_email: session.user.email,
-        question: summary, // Tu as un champ question vide par défaut dans ton schéma Proposition, profites-en !
+        question: summary, 
         score: score
       },
     });

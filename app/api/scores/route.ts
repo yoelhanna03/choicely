@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-export const dynamic = "force-dynamic";
+export const revalidate = 30; // Cache 30 secondes pour les scores
 
 export async function GET() {
   const session = await auth();
