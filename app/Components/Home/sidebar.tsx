@@ -10,6 +10,7 @@ import {
   History,
   LogOut,
   User, // Nouvelle icône pour Mon Compte
+  Heart, // Icône pour les dons
   Menu, // Icône pour ouvrir le menu mobile
   X     // Icône pour fermer le menu mobile
 } from "lucide-react";
@@ -82,6 +83,11 @@ export default function Sidebar() {
           <Link href="/historic" className={getLinkStyle("/historic")} onClick={closeMenu}>
             <History size={16} />
             Historique
+          </Link>
+
+          <Link href="/donate" className={getLinkStyle("/donate")} onClick={closeMenu}>
+            <Heart size={16} />
+            Soutenir
           </Link>
 
           <Link href="/account" className={getLinkStyle("/account")} onClick={closeMenu}>

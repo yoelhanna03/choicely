@@ -590,6 +590,36 @@ export default function Page() {
           </div>
         </section>
 
+        <Divider />
+
+        {/* ── DONATION CTA ────────────────────────────────────────────── */}
+        <section className="reveal pb-24 pt-[5rem]">
+          <div className="relative overflow-hidden rounded-[28px] border border-[rgba(255,255,255,0.1)] bg-gradient-to-br from-[#5B4FE8]/5 to-[#00C8D7]/5 px-8 py-[3rem]">
+            {/* Glow */}
+            <div
+              className="pointer-events-none absolute right-0 top-1/2 h-64 w-96 -translate-y-1/2 translate-x-24"
+              style={{
+                background: "radial-gradient(ellipse,rgba(0,200,215,0.12),transparent 60%)",
+              }}
+            />
+            <div className="relative max-w-2xl">
+              <h3 className="text-2xl font-light mb-2">
+                Soutenir le développement de <span className="text-[#00C8D7]">Choicely</span>
+              </h3>
+              <p className="text-[14px] font-light text-[rgba(237,234,248,0.50)] mb-6">
+                Vos analyses IA consomment des ressources. Contribuez pour débloquer plus de crédits et nous aider à améliorer continuellement le service.
+              </p>
+              <Link
+                href="/donate"
+                className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.2)] px-8 py-3.5 text-[13.5px] font-normal text-white transition-all duration-200 hover:bg-[rgba(255,255,255,0.05)] hover:border-[rgba(255,255,255,0.3)]"
+              >
+                <span>❤️</span>
+                Faire un don
+              </Link>
+            </div>
+          </div>
+        </section>
+
       </div>
     </>
   );
