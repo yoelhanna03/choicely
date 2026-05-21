@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
+import { consumeCredits, canPerformAction } from "@/lib/subscription-utils";
+import { CREDIT_COSTS } from "@/lib/subscription-constants";
 
 export const revalidate = 60; // Cache 60 secondes pour les questions
 
@@ -44,6 +46,14 @@ export async function POST(req: Request) {
 
     if (!situation) {
       return NextResponse.json({ error: "Situation manquante" }, { status: 400 });
+    }
+
+    const hasCredits = await canPerformAction(session.user.email, CREDIT_COSTS.ANALYSE);
+    if (!hasCredits) {
+      return NextResponse.json(
+        { error: "Crédits insuffisants pour lancer cette analyse." },
+        { status: 402 }
+      );
     }
 
     const modelName = "deepseek-ai/DeepSeek-V4-Pro:novita";
@@ -157,6 +167,8 @@ export async function POST(req: Request) {
         score: score,
       },
     });
+
+    await consumeCredits(session.user.email, CREDIT_COSTS.ANALYSE);
 
     // On retourne les données, incluant la question fraîchement créée
     return NextResponse.json({ result, summary, score, questionId: newQuestion.id });

@@ -14,9 +14,9 @@ export const TIER_CREDITS = {
 
 // Consommation de crédits par action
 export const CREDIT_COSTS = {
-  ANALYSE: 10, // Analyse simple d'un choix
-  SIMULATION: 25, // Simulation (coûte plus cher)
-  BILAN: 15, // Synthèse bilan
+  ANALYSE: 5, // Analyse simple d'un choix
+  SIMULATION: 7, // Simulation (coûte plus cher)
+  BILAN: 3, // Synthèse bilan
 } as const;
 
 // Prix des tiers (en USD)

@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { consumeCredits, canPerformAction } from "@/lib/subscription-utils";
+import { CREDIT_COSTS } from "@/lib/subscription-constants";
 export const revalidate = 0; // Désactiver le cache pour POST (génération)
 
 const client = new OpenAI({
@@ -35,6 +37,14 @@ export async function POST(req: Request) {
     }
 
     const { analyseData, question, score } = await req.json();
+
+    const hasCredits = await canPerformAction(session.user.email, CREDIT_COSTS.BILAN);
+    if (!hasCredits) {
+      return NextResponse.json(
+        { error: "Crédits insuffisants pour générer ce bilan." },
+        { status: 402 }
+      );
+    }
 
     // Récupère les 3 dernières analyses avec scores
     const previousQuestions = await db.question.findMany({
@@ -83,6 +93,8 @@ export async function POST(req: Request) {
         isbilan: true,
       },
     });
+
+    await consumeCredits(session.user.email, CREDIT_COSTS.BILAN);
 
     return NextResponse.json({
       bilan: bilanContent ?? "Impossible de générer le bilan.",

@@ -26,6 +26,7 @@ export default function SubscriptionPage() {
   const [subData, setSubData] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchSubscription() {
@@ -46,6 +47,38 @@ export default function SubscriptionPage() {
       fetchSubscription();
     }
   }, [session]);
+
+  async function handleUpgrade(tier: string) {
+    setCheckoutError(null);
+    setUpgrading(true);
+
+    try {
+      const response = await fetch("/api/subscription/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tier }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Erreur lors de la création de la session de paiement");
+      }
+
+      if (!data.url) {
+        throw new Error("Aucune URL de paiement retournée");
+      }
+
+      window.location.href = data.url;
+    } catch (error) {
+      console.error("Subscription checkout error:", error);
+      const message = error instanceof Error ? error.message : String(error);
+      setCheckoutError(message);
+    } finally {
+      setUpgrading(false);
+    }
+  }
 
   if (!session?.user) {
     return (
@@ -192,9 +225,10 @@ export default function SubscriptionPage() {
 
               <button
                 className="w-full py-3 rounded-lg bg-linear-to-r from-[#5B4FE8] to-[#00C8D7] text-white hover:opacity-90 transition disabled:opacity-50"
-                disabled={subData?.subscription.tier === "pro"}
+                disabled={loading || subData?.subscription.tier === "pro" || upgrading}
+                onClick={() => handleUpgrade("pro")}
               >
-                {subData?.subscription.tier === "pro" ? "Plan actuel" : "Upgrader"}
+                {subData?.subscription.tier === "pro" ? "Plan actuel" : upgrading ? "Redirection..." : "Upgrader"}
               </button>
             </div>
 
@@ -243,9 +277,10 @@ export default function SubscriptionPage() {
 
               <button
                 className="w-full py-3 rounded-lg bg-linear-to-r from-[#5B4FE8] to-[#00C8D7] text-white hover:opacity-90 transition disabled:opacity-50"
-                disabled={subData?.subscription.tier === "premium"}
+                disabled={loading || subData?.subscription.tier === "premium" || upgrading}
+                onClick={() => handleUpgrade("premium")}
               >
-                {subData?.subscription.tier === "premium" ? "Plan actuel" : "Upgrader"}
+                {subData?.subscription.tier === "premium" ? "Plan actuel" : upgrading ? "Redirection..." : "Upgrader"}
               </button>
             </div>
           </div>
@@ -255,18 +290,23 @@ export default function SubscriptionPage() {
             <h3 className="text-xl font-light mb-4">Comment marchent les crédits ?</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-[rgba(237,234,248,0.70)]">
               <div>
-                <p className="font-medium text-white mb-2">Analyse (10 crédits)</p>
+                <p className="font-medium text-white mb-2">Analyse (5 crédits)</p>
                 <p>Analyser un choix ou une décision</p>
               </div>
               <div>
-                <p className="font-medium text-white mb-2">Simulation (25 crédits)</p>
+                <p className="font-medium text-white mb-2">Simulation (7 crédits)</p>
                 <p>Tester différents scénarios</p>
               </div>
               <div>
-                <p className="font-medium text-white mb-2">Bilan (15 crédits)</p>
+                <p className="font-medium text-white mb-2">Bilan (3 crédits)</p>
                 <p>Générer une synthèse complète</p>
               </div>
             </div>
+            {checkoutError && (
+              <div className="mt-6 rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-100">
+                {checkoutError}
+              </div>
+            )}
           </div>
         </div>
       </div>

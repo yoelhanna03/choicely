@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { consumeCredits, canPerformAction } from "@/lib/subscription-utils";
+import { CREDIT_COSTS } from "@/lib/subscription-constants";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
@@ -13,6 +15,14 @@ export async function POST(req: Request) {
 
     if (!situation?.trim()) {
       return NextResponse.json({ error: "Situation manquante" }, { status: 400 });
+    }
+
+    const hasCredits = await canPerformAction(session.user.email, CREDIT_COSTS.SIMULATION);
+    if (!hasCredits) {
+      return NextResponse.json(
+        { error: "Crédits insuffisants pour cette simulation." },
+        { status: 402 }
+      );
     }
 
     const HF_KEY = process.env.HUGGINGFACE_API_KEY;
@@ -91,6 +101,8 @@ Retourne UNIQUEMENT ce JSON valide :
     }
 
     const parsed = JSON.parse(match[0]);
+
+    await consumeCredits(session.user.email, CREDIT_COSTS.SIMULATION);
 
     return NextResponse.json({
       title: parsed.title || "Analyse stratégique",
