@@ -93,7 +93,9 @@ function Step({ number, title, desc }: StepProps) {
         {number}
       </span>
       <p className="mb-2.5 text-[14.5px] font-normal text-[#EDEAF8]">{title}</p>
-      <p className="text-[13px] font-light leading-[1.68] text-[rgba(237,234,248,0.50)]">{desc}</p>
+      <p className="text-[13px] font-light leading-[1.68] text-[rgba(237,234,248,0.50)]">
+        {desc}
+      </p>
     </div>
   );
 }
@@ -105,7 +107,9 @@ function FeatureCard({ icon, title, desc }: FeatureCardProps) {
         {icon}
       </div>
       <p className="mb-2 text-sm font-normal text-[#EDEAF8]">{title}</p>
-      <p className="text-[12.5px] font-light leading-[1.68] text-[rgba(237,234,248,0.50)]">{desc}</p>
+      <p className="text-[12.5px] font-light leading-[1.68] text-[rgba(237,234,248,0.50)]">
+        {desc}
+      </p>
     </div>
   );
 }
@@ -153,7 +157,9 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 // ─── Background 3D canvas hook ────────────────────────────────────────────────
 
-function useBackgroundCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
+function useBackgroundCanvas(
+  canvasRef: React.RefObject<HTMLCanvasElement | null>,
+) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -171,9 +177,12 @@ function useBackgroundCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null
     canvas.height = H();
 
     type Node = {
-      x: number; y: number;
-      vx: number; vy: number;
-      r: number; color: string;
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      r: number;
+      color: string;
     };
 
     const nodes: Node[] = Array.from({ length: 22 }, () => ({
@@ -186,7 +195,10 @@ function useBackgroundCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null
     }));
 
     const mouse = { x: W() / 2, y: H() / 2 };
-    const onMouse = (e: MouseEvent) => { mouse.x = e.clientX; mouse.y = e.clientY; };
+    const onMouse = (e: MouseEvent) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    };
     window.addEventListener("mousemove", onMouse);
 
     const onResize = () => {
@@ -254,7 +266,9 @@ function useBackgroundCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null
 
 // ─── Mini crystal canvas hook ─────────────────────────────────────────────────
 
-function useCrystalCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
+function useCrystalCanvas(
+  canvasRef: React.RefObject<HTMLCanvasElement | null>,
+) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -272,14 +286,15 @@ function useCrystalCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) 
       a: (i / 6) * Math.PI * 2,
       rad: 60 + (i % 2) * 22,
       sp: 0.008 + i * 0.0008,
-      y: (i % 3 - 1) * 28,
+      y: ((i % 3) - 1) * 28,
       color: i % 2 === 0 ? "#00C8D7" : "#5B4FE8",
     }));
 
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
 
-    let mx = 0, my = 0;
+    let mx = 0,
+      my = 0;
     const onMouse = (e: MouseEvent) => {
       const rc = parent.getBoundingClientRect();
       mx = ((e.clientX - rc.left) / rc.width - 0.5) * 30;
@@ -287,7 +302,13 @@ function useCrystalCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) 
     };
     parent.addEventListener("mousemove", onMouse);
 
-    const drawIcosahedron = (x: number, y: number, r: number, color: string, alpha: number) => {
+    const drawIcosahedron = (
+      x: number,
+      y: number,
+      r: number,
+      color: string,
+      alpha: number,
+    ) => {
       const sides = 6;
       ctx.beginPath();
       for (let i = 0; i < sides; i++) {
@@ -298,7 +319,11 @@ function useCrystalCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) 
         else ctx.lineTo(px, py);
       }
       ctx.closePath();
-      ctx.strokeStyle = color + Math.round(alpha * 255).toString(16).padStart(2, "0");
+      ctx.strokeStyle =
+        color +
+        Math.round(alpha * 255)
+          .toString(16)
+          .padStart(2, "0");
       ctx.lineWidth = 1;
       ctx.stroke();
       // inner
@@ -360,8 +385,11 @@ function useScrollReveal() {
   useEffect(() => {
     const els = document.querySelectorAll<HTMLElement>(".reveal");
     const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in"); }),
-      { threshold: 0.08 }
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add("in");
+        }),
+      { threshold: 0.08 },
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
@@ -373,7 +401,6 @@ function useScrollReveal() {
 export default function Page() {
   const bgRef = useRef<HTMLCanvasElement | null>(null);
   const crystalRef = useRef<HTMLCanvasElement | null>(null);
-  
 
   useBackgroundCanvas(bgRef);
   useCrystalCanvas(crystalRef);
@@ -418,10 +445,8 @@ export default function Page() {
       />
 
       <div className="relative z-10 mx-auto max-w-265 px-10">
-
         {/* ── HERO ─────────────────────────────────────────────────────── */}
         <section className="relative flex min-h-screen flex-col items-center justify-center px-8 pb-20 pt-24 text-center">
-
           {/* Badge */}
           <div className="anim-0 mb-9 inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.11)] bg-[rgba(91,79,232,0.08)] px-4 py-1.5">
             <span className="dot h-1.25 w-1.25 rounded-full bg-[#00C8D7]" />
@@ -448,8 +473,8 @@ export default function Page() {
 
           {/* Subtitle */}
           <p className="anim-2 mb-11 max-w-120 text-[15px] font-light leading-[1.75] text-[rgba(237,234,248,0.50)]">
-            Choicely décompose vos situations complexes, révèle les scénarios cachés et illumine ce
-            qui compte vraiment — en quelques secondes.
+            Choicely décompose vos situations complexes, révèle les scénarios
+            cachés et illumine ce qui compte vraiment — en quelques secondes.
           </p>
 
           {/* CTAs */}
@@ -486,7 +511,9 @@ export default function Page() {
             <SectionLabel>Processus</SectionLabel>
             <h2 className="font-cormorant text-[clamp(30px,4vw,46px)] font-light leading-[1.18] tracking-[-0.02em]">
               Un chemin en trois{" "}
-              <em className="font-light italic text-[rgba(237,234,248,0.5)]">instants</em>
+              <em className="font-light italic text-[rgba(237,234,248,0.5)]">
+                instants
+              </em>
             </h2>
           </div>
           <div className="steps-grid">
@@ -503,7 +530,10 @@ export default function Page() {
           <div className="grid grid-cols-2 items-center gap-20">
             {/* Crystal canvas */}
             <div className="relative aspect-4/3 overflow-hidden rounded-[22px] border border-[rgba(255,255,255,0.11)] bg-[#0F0F17]">
-              <canvas ref={crystalRef} className="absolute inset-0 h-full w-full" />
+              <canvas
+                ref={crystalRef}
+                className="absolute inset-0 h-full w-full"
+              />
             </div>
 
             {/* Text */}
@@ -513,15 +543,18 @@ export default function Page() {
                 Une méthode structurée
                 <br />
                 pour décider{" "}
-                <em className="font-light italic text-[rgba(237,234,248,0.5)]">mieux.</em>
+                <em className="font-light italic text-[rgba(237,234,248,0.5)]">
+                  mieux.
+                </em>
               </h2>
               <p className="mb-3.5 text-[13.5px] font-light leading-[1.78] text-[rgba(237,234,248,0.50)]">
-                Chaque décision repose sur des conséquences, des zones d&apos;incertitude et des aspects
-                que l&apos;on ne perçoit pas immédiatement.
+                Chaque décision repose sur des conséquences, des zones
+                d&apos;incertitude et des aspects que l&apos;on ne perçoit pas
+                immédiatement.
               </p>
               <p className="text-[13.5px] font-light leading-[1.78] text-[rgba(237,234,248,0.50)]">
-                Choicely organise ces éléments, clarifie les scénarios possibles et met en évidence
-                les leviers essentiels pour agir.
+                Choicely organise ces éléments, clarifie les scénarios possibles
+                et met en évidence les leviers essentiels pour agir.
               </p>
               <div className="mt-8 flex gap-5">
                 {METRICS.map((m) => (
@@ -540,45 +573,15 @@ export default function Page() {
             <SectionLabel>Fonctionnalités</SectionLabel>
             <h2 className="font-cormorant text-[clamp(30px,4vw,46px)] font-light leading-[1.18] tracking-[-0.02em]">
               Conçu pour rendre la clarté{" "}
-              <em className="font-light italic text-[rgba(237,234,248,0.5)]">accessible</em>
+              <em className="font-light italic text-[rgba(237,234,248,0.5)]">
+                accessible
+              </em>
             </h2>
           </div>
           <div className="grid grid-cols-3 gap-5">
             {FEATURES.map((f) => (
               <FeatureCard key={f.title} {...f} />
             ))}
-          </div>
-        </section>
-
-        <Divider />
-
-        {/* ── DONATION CTA ────────────────────────────────────────────── */}
-        <section className="reveal py-20">
-          <div className="relative overflow-hidden rounded-[28px] border border-[rgba(255,255,255,0.15)] bg-linear-to-br from-[#5B4FE8]/8 to-[#00C8D7]/8 px-8 py-16 md:px-12 md:py-20">
-            {/* Glow */}
-            <div
-              className="pointer-events-none absolute -right-32 top-1/2 h-80 w-96 -translate-y-1/2"
-              style={{
-                background: "radial-gradient(ellipse,rgba(0,200,215,0.15),transparent 60%)",
-              }}
-            />
-            <div className="relative max-w-3xl">
-              <div className="mb-2 inline-block rounded-lg bg-[#5B4FE8]/20 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider text-[#00C8D7]">
-               Soutenir Choicely
-              </div>
-              <h2 className="text-3xl md:text-4xl font-light mb-4">
-                Aidez-nous à continuer
-              </h2>
-              <p className="text-[15px] font-light leading-[1.7] text-[rgba(237,234,248,0.60)] mb-8 max-w-lg">
-                Choicely fonctionne grâce aux analyses IA coûteuses. Vos dons nous permettent d'améliorer continuellement le service et de le rendre plus accessible.
-              </p>
-              <Link
-                href="/donate"
-                className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-[#5B4FE8] to-[#00C8D7] px-8 py-3.5 text-[13.5px] font-normal text-white transition-all duration-200 hover:shadow-lg hover:shadow-[#5B4FE8]/30 hover:-translate-y-0.5"
-              >
-               Faire un don
-              </Link>
-            </div>
           </div>
         </section>
 
@@ -591,7 +594,8 @@ export default function Page() {
             <div
               className="pointer-events-none absolute left-1/2 top-0 h-48 w-96 -translate-x-1/2 -translate-y-16"
               style={{
-                background: "radial-gradient(ellipse,rgba(91,79,232,0.18),transparent 70%)",
+                background:
+                  "radial-gradient(ellipse,rgba(91,79,232,0.18),transparent 70%)",
               }}
             />
             <h2 className="font-cormorant relative mb-3.5 text-[clamp(32px,5vw,52px)] font-light leading-[1.15]">
@@ -621,7 +625,6 @@ export default function Page() {
             </Link>
           </div>
         </section>
-
       </div>
     </>
   );

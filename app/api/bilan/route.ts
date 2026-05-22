@@ -38,11 +38,14 @@ export async function POST(req: Request) {
 
     const { analyseData, question, score } = await req.json();
 
-    const hasCredits = await canPerformAction(session.user.email, CREDIT_COSTS.BILAN);
+    const hasCredits = await canPerformAction(
+      session.user.email,
+      CREDIT_COSTS.BILAN,
+    );
     if (!hasCredits) {
       return NextResponse.json(
         { error: "Crédits insuffisants pour générer ce bilan." },
-        { status: 402 }
+        { status: 402 },
       );
     }
 
@@ -63,7 +66,8 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "system",
-          content: "Tu es un expert en synthèse stratégique et mentorat décisionnel. Tu dois créer un bilan concis et actionnable basé sur les analyses récentes de l'utilisateur. Sois encourageant mais honnête. Fais quelque chose de simple qui a du sens (2-3 phrases max).Donne quelque chose de simple et comprehensible."
+          content:
+            "Tu es un expert en synthèse stratégique et mentorat décisionnel. Tu dois créer un bilan concis et actionnable basé sur les analyses récentes de l'utilisateur. Sois encourageant mais honnête. Fais quelque chose de simple qui a du sens (2-3 phrases max).Donne quelque chose de simple et comprehensible.",
         },
         {
           role: "user",
@@ -100,7 +104,6 @@ export async function POST(req: Request) {
       bilan: bilanContent ?? "Impossible de générer le bilan.",
       bilanId: newBilan.id,
     });
-
   } catch (error: any) {
     console.error("[API /bilan] Erreur complète:", {
       message: error?.message,
@@ -117,17 +120,18 @@ export async function POST(req: Request) {
     if (isQuotaError) {
       return NextResponse.json(
         {
-          error:
-            "Le quota de l'API est épuisé. Merci de réessayer plus tard ou de soutenir le projet via /donate.",
-          detail: error?.message,
+          error: "Le quota de l'API est épuisé. Merci de réessayer plus tard.",
         },
-        { status: 402 }
+        { status: 402 },
       );
     }
 
     return NextResponse.json(
-      { error: "Erreur lors de la génération du bilan.", detail: error?.message },
-      { status: 500 }
+      {
+        error: "Erreur lors de la génération du bilan.",
+        detail: error?.message,
+      },
+      { status: 500 },
     );
   }
 }
