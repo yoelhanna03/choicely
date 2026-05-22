@@ -100,3 +100,36 @@ model Credit {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
+
+model CollaborationRoom {
+  id          String   @id @default(cuid())
+  name        String
+  createdBy   String
+  createdAt   DateTime @default(now())
+  maxMembers  Int
+  isActive    Boolean  @default(true)
+  // allowed tiers: "pro" or "premium" (which can join/create)
+  tier        String   @default("pro")
+  members     CollaborationMember[]
+  messages    CollaborationMessage[]
+}
+
+model CollaborationMember {
+  id        String @id @default(cuid())
+  roomId    String
+  userId    String
+  role      String @default("member")
+  joinedAt  DateTime @default(now())
+  room      CollaborationRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
+
+model CollaborationMessage {
+  id        String @id @default(cuid())
+  roomId    String
+  senderId  String?
+  senderName String?
+  content   String
+  isAi      Boolean @default(false)
+  createdAt DateTime @default(now())
+  room      CollaborationRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
