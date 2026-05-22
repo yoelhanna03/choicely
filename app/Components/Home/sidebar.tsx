@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   Shield,
+  MessageSquare,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -120,6 +121,15 @@ export default function Sidebar() {
           >
             <History size={16} />
             Historique
+          </Link>
+
+          <Link
+            href="/collab"
+            className={getLinkStyle("/collab")}
+            onClick={closeMenu}
+          >
+            <MessageSquare size={16} />
+            Collaboration
           </Link>
 
           <Link
