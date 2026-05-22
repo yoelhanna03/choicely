@@ -32,41 +32,71 @@ export default function AdminDashboard() {
   const [data, setData] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  async function fetchAdminData() {
+    try {
+      if (!session?.user?.email) {
+        router.push("/auth/login");
+        return;
+      }
+
+      const res = await fetch("/api/admin/stats");
+
+      if (res.status === 403) {
+        setError("Accès refusé. Vous n'êtes pas administrateur.");
+        setLoading(false);
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error("Erreur lors du chargement des données admin");
+      }
+
+      const adminData = await res.json();
+      setData(adminData);
+    } catch (err) {
+      console.error("Admin fetch error:", err);
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function fetchAdminData() {
-      try {
-        if (!session?.user?.email) {
-          router.push("/auth/login");
-          return;
-        }
-
-        const res = await fetch("/api/admin/stats");
-
-        if (res.status === 403) {
-          setError("Accès refusé. Vous n'êtes pas administrateur.");
-          setLoading(false);
-          return;
-        }
-
-        if (!res.ok) {
-          throw new Error("Erreur lors du chargement des données admin");
-        }
-
-        const adminData = await res.json();
-        setData(adminData);
-      } catch (err) {
-        console.error("Admin fetch error:", err);
-        setError(String(err));
-      } finally {
-        setLoading(false);
-      }
-    }
-
     if (session?.user) {
       fetchAdminData();
     }
   }, [session, router]);
+
+  async function handleDeleteUser(userId: string, userEmail: string) {
+    if (!confirm(`Supprimer l'utilisateur ${userEmail} ? Cette action est irréversible.`)) {
+      return;
+    }
+
+    setDeletingUserId(userId);
+    setSuccessMessage(null);
+
+    try {
+      const res = await fetch(`/api/admin/users?id=${encodeURIComponent(userId)}`, {
+        method: "DELETE",
+      });
+
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || "Erreur lors de la suppression de l'utilisateur");
+      }
+
+      setSuccessMessage(`Utilisateur ${userEmail} supprimé.`);
+      await fetchAdminData();
+    } catch (err) {
+      console.error("Delete user error:", err);
+      setError(String(err));
+    } finally {
+      setDeletingUserId(null);
+    }
+  }
 
   if (loading) {
     return (
@@ -123,6 +153,12 @@ export default function AdminDashboard() {
               Accès administrateur - Gestion complète de la plateforme
             </p>
           </div>
+
+          {successMessage && (
+            <div className="mb-6 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-100">
+              {successMessage}
+            </div>
+          )}
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
@@ -210,6 +246,9 @@ export default function AdminDashboard() {
                     <th className="px-6 py-4 text-left text-[rgba(237,234,248,0.60)] font-normal">
                       Inscrit
                     </th>
+                    <th className="px-6 py-4 text-left text-[rgba(237,234,248,0.60)] font-normal">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -243,6 +282,22 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4 text-[rgba(237,234,248,0.70)] text-xs">
                         {new Date(user.createdAt).toLocaleDateString("fr-FR")}
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          disabled={
+                            deletingUserId === user.id ||
+                            user.email === session?.user?.email
+                          }
+                          onClick={() => handleDeleteUser(user.id, user.email)}
+                          className="rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-2 text-red-200 text-sm transition hover:bg-red-500/15 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          {user.email === session?.user?.email
+                            ? "Moi"
+                            : deletingUserId === user.id
+                            ? "Suppression..."
+                            : "Supprimer"}
+                        </button>
                       </td>
                     </tr>
                   ))}

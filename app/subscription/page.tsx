@@ -202,7 +202,9 @@ export default function SubscriptionPage() {
                 : "border-[rgba(255,255,255,0.1)] hover:border-[rgba(255,255,255,0.2)]"
             }`}>
               <h3 className="text-2xl font-light mb-2">Gratuit</h3>
-              <p className="text-sm text-[rgba(237,234,248,0.60)] mb-6">Actuel</p>
+              <p className="text-sm text-[rgba(237,234,248,0.60)] mb-6">
+                {subData?.subscription.tier === "free" ? "Actuel" : "Gratuit"}
+              </p>
 
               <div className="mb-8">
                 <div className="text-3xl font-light mb-1">50 crédits</div>
@@ -225,7 +227,7 @@ export default function SubscriptionPage() {
               </div>
 
               <button disabled className="w-full py-3 rounded-lg border border-[rgba(255,255,255,0.2)] text-white transition opacity-50">
-                Plan actuel
+                {subData?.subscription.tier === "free" ? "Plan actuel" : "Gratuit"}
               </button>
             </div>
 
