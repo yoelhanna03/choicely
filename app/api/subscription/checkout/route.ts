@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     }
 
     const stripe = getStripe();
-    const successUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/subscription?payment=success`;
+    const successUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/subscription?payment=success&session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/subscription?payment=cancelled`;
 
     const checkoutSession = await stripe.checkout.sessions.create({

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Heart, Check, ArrowLeft } from "lucide-react";
 import Sidebar from "@/app/Components/Home/sidebar";
@@ -27,26 +28,62 @@ export default function SubscriptionPage() {
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  async function fetchSubscription() {
+    try {
+      const res = await fetch("/api/subscription/current");
+      if (res.ok) {
+        const data = await res.json();
+        setSubData(data);
+      }
+    } catch (error) {
+      console.error("Error fetching subscription:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function fetchSubscription() {
-      try {
-        const res = await fetch("/api/subscription/current");
-        if (res.ok) {
-          const data = await res.json();
-          setSubData(data);
-        }
-      } catch (error) {
-        console.error("Error fetching subscription:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     if (session?.user) {
       fetchSubscription();
     }
   }, [session]);
+
+  useEffect(() => {
+    const payment = searchParams.get("payment");
+    const sessionId = searchParams.get("session_id");
+
+    if (payment === "success" && sessionId && session?.user) {
+      async function confirmSubscription() {
+        setConfirming(true);
+        try {
+          const encodedSessionId = encodeURIComponent(sessionId as string);
+          const res = await fetch(`/api/subscription/confirm?session_id=${encodedSessionId}`);
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || "Erreur lors de la confirmation de l'abonnement");
+          }
+
+          setSuccessMessage(`Abonnement ${data.tier} activé !`);
+          await fetchSubscription();
+          router.replace("/subscription", { scroll: false });
+        } catch (error) {
+          console.error("Subscription confirmation error:", error);
+          const message = error instanceof Error ? error.message : String(error);
+          setCheckoutError(message);
+        } finally {
+          setConfirming(false);
+        }
+      }
+
+      confirmSubscription();
+    }
+  }, [searchParams, session, router]);
 
   async function handleUpgrade(tier: string) {
     setCheckoutError(null);
@@ -133,19 +170,27 @@ export default function SubscriptionPage() {
           {loading ? (
             <div className="text-center py-12">Chargement...</div>
           ) : subData ? (
-            <div className="mb-16 p-6 rounded-xl border border-[rgba(0,200,215,0.2)] bg-[rgba(0,200,215,0.5)]">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-[rgba(237,234,248,0.60)] mb-1">Abonnement actuel</p>
-                  <h2 className="text-2xl font-light capitalize">
-                    {subData.subscription.tier === "free" ? "Gratuit" : subData.subscription.tier}
-                  </h2>
-                  <p className="text-sm text-[rgba(237,234,248,0.60)] mt-2">
-                    Crédits restants : <span className="text-white font-medium">{subData.credits.balance}</span>
-                  </p>
+            <>
+              {successMessage && (
+                <div className="mb-6 rounded-xl border border-[#15b7ff] bg-[#15b7ff]/10 p-4 text-sm text-[#c7f3ff]">
+                  {successMessage}
+                </div>
+              )}
+
+              <div className="mb-16 p-6 rounded-xl border border-[rgba(0,200,215,0.2)] bg-[rgba(0,200,215,0.5)]">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm text-[rgba(237,234,248,0.60)] mb-1">Abonnement actuel</p>
+                    <h2 className="text-2xl font-light capitalize">
+                      {subData.subscription.tier === "free" ? "Gratuit" : subData.subscription.tier}
+                    </h2>
+                    <p className="text-sm text-[rgba(237,234,248,0.60)] mt-2">
+                      Crédits restants : <span className="text-white font-medium">{subData.credits.balance}</span>
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </>
           ) : null}
 
           {/* Plans Grid */}
