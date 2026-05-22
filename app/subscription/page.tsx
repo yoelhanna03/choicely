@@ -192,7 +192,7 @@ export default function SubscriptionPage() {
             }`}>
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <span className="px-4 py-1 bg-linear-to-r from-[#5B4FE8] to-[#00C8D7] rounded-full text-[11px] font-medium text-white">
-                  ⭐ Populaire
+                  Populaire
                 </span>
               </div>
 
@@ -211,7 +211,7 @@ export default function SubscriptionPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Check size={16} className="text-[#00C8D7]" />
-                  <span>📄 Export PDF des analyses</span>
+                  <span>Export PDF des analyses</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Check size={16} className="text-[#00C8D7]" />
@@ -240,7 +240,7 @@ export default function SubscriptionPage() {
             }`}>
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <span className="px-4 py-1 bg-linear-to-r from-[#00C8D7] to-[#5B4FE8] rounded-full text-[11px] font-medium text-white">
-                  👑 Meilleur choix
+                   Meilleur choix
                 </span>
               </div>
 

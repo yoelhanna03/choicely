@@ -1,24 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard,
   ListTodo,
   History,
   LogOut,
-  User, // Nouvelle icône pour Mon Compte
-  Heart, // Icône pour les dons
+  User,
+  Heart,
   Star,
-  Menu, // Icône pour ouvrir le menu mobile
-  X     // Icône pour fermer le menu mobile
+  Menu,
+  X,
+  Shield,
 } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const getLinkStyle = (href: string) => {
     const isActive = pathname === href;
@@ -36,6 +40,25 @@ export default function Sidebar() {
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
+
+  useEffect(() => {
+    // Vérifier et mettre à jour le statut admin
+    async function checkAdmin() {
+      if (session?.user?.email) {
+        try {
+          const res = await fetch("/api/auth/check-admin", {
+            method: "POST",
+          });
+          const data = await res.json();
+          setIsAdmin(data.isAdmin);
+        } catch (error) {
+          console.error("Error checking admin status:", error);
+        }
+      }
+    }
+
+    checkAdmin();
+  }, [session]);
 
   return (
     <>
@@ -100,6 +123,13 @@ export default function Sidebar() {
             <User size={16} />
             Mon compte
           </Link>
+
+          {isAdmin && (
+            <Link href="/admin/dashboard" className={getLinkStyle("/admin/dashboard")} onClick={closeMenu}>
+              <Shield size={16} />
+              <span className="text-purple-300">Admin Dashboard</span>
+            </Link>
+          )}
         </nav>
 
         {/* BOUTON DE DÉCONNEXION */}
