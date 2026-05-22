@@ -24,10 +24,12 @@ export default function ChatRoom({
 
     const socketUrl =
       process.env.NEXT_PUBLIC_SOCKET_URL ||
-      window.location.origin.replace(/:\\d+$/, ":4000");
+      (typeof window !== "undefined" && window.location.hostname === "localhost"
+        ? window.location.origin.replace(/:\d+$/, ":4000")
+        : window.location.origin);
     import("socket.io-client")
       .then(({ io }) => {
-        const socket = io(socketUrl);
+        const socket = io(socketUrl, { transports: ["websocket"] });
         socket.emit("join", roomId);
         socket.on("message", (payload: any) => {
           setMessages((m) => [...m, payload]);
