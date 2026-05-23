@@ -13,6 +13,7 @@ export default function ChatRoom({
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteStatus, setInviteStatus] = useState<string | null>(null);
   const socketRef = useRef<any>(null);
+  const messagesRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -61,16 +62,36 @@ export default function ChatRoom({
     };
   }, [roomId]);
 
+  useEffect(() => {
+    // auto-scroll to bottom when messages change
+    const el = messagesRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [messages]);
+
   async function send() {
     if (!text.trim()) return;
-    const res = await fetch(`/api/collab/rooms/${roomId}/messages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: text }),
-    });
-    const data = await res.json();
-    if (data.error) return alert(data.error);
-    setText("");
+    try {
+      const res = await fetch(`/api/collab/rooms/${roomId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: text }),
+      });
+      const data = await res.json();
+      if (data.error) return alert(data.error);
+      setText("");
+    } catch (e) {
+      console.error("Failed to send message", e);
+      alert("Erreur d'envoi");
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
   }
 
   async function invite() {
@@ -100,17 +121,25 @@ export default function ChatRoom({
         </div>
       </div>
 
-      <div className="h-64 overflow-y-auto mb-3 p-2 bg-[#08080a] rounded">
+      <div
+        ref={messagesRef}
+        className="h-64 overflow-y-auto mb-3 p-2 bg-[#08080a] rounded"
+      >
+        {messages.length === 0 && (
+          <div className="text-sm text-white/50">
+            Aucun message pour le moment. Envoyez le premier message !
+          </div>
+        )}
         {messages.map((m) => (
           <div
             key={m.id}
-            className={`mb-2 ${m.isAi ? "text-yellow-200" : "text-white"}`}
+            className={`mb-3 p-2 rounded ${m.isAi ? "bg-yellow-900/10 text-yellow-200" : "bg-white/2 text-white"}`}
           >
-            <div className="text-xs text-white/60">
-              {m.senderName ?? (m.isAi ? "Assistant IA" : "Anonyme")} •{" "}
-              {new Date(m.createdAt).toLocaleTimeString()}
+            <div className="text-xs text-white/60 flex items-center justify-between">
+              <div>{m.senderName ?? (m.isAi ? "Assistant IA" : "Anonyme")}</div>
+              <div>{new Date(m.createdAt).toLocaleTimeString()}</div>
             </div>
-            <div className="mt-1">{m.content}</div>
+            <div className="mt-1 whitespace-pre-wrap">{m.content}</div>
           </div>
         ))}
       </div>
@@ -131,13 +160,19 @@ export default function ChatRoom({
           <p className="text-sm text-white/70">{inviteStatus}</p>
         )}
       </div>
-      <div className="flex gap-2">
-        <input
+      <div className="flex gap-2 items-end">
+        <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="flex-1 px-3 py-2 rounded bg-[#101017]"
+          onKeyDown={handleKeyDown}
+          placeholder="Écrire un message. Entrée = envoyer, Shift+Entrée = retour à la ligne"
+          className="flex-1 px-3 py-2 rounded bg-[#101017] resize-none h-20"
         />
-        <button onClick={send} className="px-3 py-2 rounded bg-indigo-600">
+        <button
+          onClick={send}
+          disabled={!text.trim()}
+          className={`px-4 py-2 rounded ${text.trim() ? "bg-indigo-600 hover:bg-indigo-700" : "bg-white/10 text-white/60 cursor-not-allowed"}`}
+        >
           Envoyer
         </button>
       </div>

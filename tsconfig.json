@@ -13,6 +13,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "ignoreDeprecations": "6.0",
     "plugins": [{ "name": "next" }],
     "paths": { "@/*": ["./*"] }
   },
@@ -24,7 +25,8 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts",
     "auth.config.ts",
-    "lib/db.ts"
-, "app/api/bilan/route.ts"  ],
+    "lib/db.ts",
+    "app/api/bilan/route.ts"
+  ],
   "exclude": ["node_modules"]
 }

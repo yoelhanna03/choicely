@@ -37,7 +37,25 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
     if (!session?.user?.email)
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
-    const roomId = params.id;
+    const roomId = params?.id;
+    if (!roomId) {
+      console.error("Collab message POST: missing roomId in params", {
+        params,
+      });
+      return NextResponse.json(
+        { error: "Identifiant de salle manquant" },
+        { status: 400 },
+      );
+    }
+
+    // ensure room exists
+    const roomExists = await (db as any).collaborationRoom.findUnique({
+      where: { id: roomId },
+    });
+    if (!roomExists) {
+      console.error("Collab message POST: room not found", { roomId });
+      return NextResponse.json({ error: "Salle introuvable" }, { status: 404 });
+    }
     const body = await req.json();
     const content = body?.content;
     if (!content || typeof content !== "string")
