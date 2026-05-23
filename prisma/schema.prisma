@@ -112,6 +112,7 @@ model CollaborationRoom {
   tier        String   @default("pro")
   members     CollaborationMember[]
   messages    CollaborationMessage[]
+  choices     CollaborationChoice[]
 }
 
 model CollaborationMember {
