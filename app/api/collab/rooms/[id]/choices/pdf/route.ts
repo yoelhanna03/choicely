@@ -2,17 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getUserIdByEmail, getUserTier } from "@/lib/collab-utils";
-import PDFDocument from "pdfkit";
-
-function bufferFromPdf(doc: PDFKit.PDFDocument): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const chunks: Uint8Array[] = [];
-    doc.on("data", (chunk) => chunks.push(chunk));
-    doc.on("end", () => resolve(Buffer.concat(chunks)));
-    doc.on("error", reject);
-    doc.end();
-  });
-}
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 export async function GET(req: NextRequest, { params }: { params: any }) {
   const routeParams = await params;
@@ -57,67 +47,130 @@ export async function GET(req: NextRequest, { params }: { params: any }) {
     orderBy: { createdAt: "asc" },
   });
 
-  const doc = new PDFDocument({ size: "A4", margin: 40 });
-  doc
-    .font("Helvetica-Bold")
-    .fontSize(22)
-    .fillColor("#1f2937")
-    .text(`Choix de la salle : ${room.name}`);
-  doc.moveDown(0.5);
-  doc.fontSize(12).fillColor("#4b5563");
-  doc.text(`Export généré le ${new Date().toLocaleString("fr-FR")}`);
-  doc.moveDown(1);
+  const pdfDoc = await PDFDocument.create();
+  let currentPage = pdfDoc.addPage([595.28, 841.89]);
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-  const tableTop = doc.y;
-  const columnWidths = [120, 160, 180, 120];
+  const margin = 40;
+  let y = currentPage.getHeight() - margin;
 
-  doc.fontSize(11).fillColor("#111827");
-  doc.text("Membre", 40, tableTop, { width: columnWidths[0], bold: true });
-  doc.text("Choix", 40 + columnWidths[0], tableTop, { width: columnWidths[1] });
-  doc.text("Précisions", 40 + columnWidths[0] + columnWidths[1], tableTop, {
-    width: columnWidths[2],
+  currentPage.drawText(`Choix de la salle : ${room.name}`, {
+    x: margin,
+    y,
+    size: 22,
+    font: boldFont,
+    color: rgb(0.12, 0.18, 0.29),
   });
-  doc.text(
-    "Date",
-    40 + columnWidths[0] + columnWidths[1] + columnWidths[2],
-    tableTop,
-    { width: columnWidths[3] },
-  );
-  doc.moveDown(0.8);
 
-  choices.forEach((choice: any, index: number) => {
-    const y = doc.y;
-    const fill = index % 2 === 0 ? "#f8fafc" : "#ffffff";
-    doc
-      .rect(40, y - 2, 520, 30)
-      .fill(fill)
-      .strokeOpacity(0);
-    doc.fillColor("#111827");
-    doc.text(choice.userName, 45, y, {
-      width: columnWidths[0],
-      continued: false,
-    });
-    doc.text(choice.choice, 45 + columnWidths[0], y, {
-      width: columnWidths[1],
-      continued: false,
-    });
-    doc.text(choice.note ?? "-", 45 + columnWidths[0] + columnWidths[1], y, {
-      width: columnWidths[2],
-      continued: false,
-    });
-    doc.text(
-      new Date(choice.createdAt).toLocaleString("fr-FR"),
-      45 + columnWidths[0] + columnWidths[1] + columnWidths[2],
+  y -= 32;
+  currentPage.drawText(
+    `Export généré le ${new Date().toLocaleString("fr-FR")}`,
+    {
+      x: margin,
       y,
-      {
-        width: columnWidths[3],
-        continued: false,
-      },
-    );
-    doc.moveDown(1.2);
+      size: 12,
+      font,
+      color: rgb(0.29, 0.35, 0.42),
+    },
+  );
+
+  y -= 36;
+  const columnPositions = [margin, margin + 140, margin + 320, margin + 510];
+  const rowHeight = 18;
+
+  currentPage.drawRectangle({
+    x: margin,
+    y: y - 10,
+    width: currentPage.getWidth() - margin * 2,
+    height: rowHeight + 8,
+    color: rgb(0.95, 0.96, 0.98),
   });
 
-  const buffer = await bufferFromPdf(doc);
+  currentPage.drawText("Membre", {
+    x: columnPositions[0],
+    y,
+    size: 11,
+    font: boldFont,
+    color: rgb(0.07, 0.09, 0.15),
+  });
+  currentPage.drawText("Choix", {
+    x: columnPositions[1],
+    y,
+    size: 11,
+    font: boldFont,
+    color: rgb(0.07, 0.09, 0.15),
+  });
+  currentPage.drawText("Précisions", {
+    x: columnPositions[2],
+    y,
+    size: 11,
+    font: boldFont,
+    color: rgb(0.07, 0.09, 0.15),
+  });
+  currentPage.drawText("Date", {
+    x: columnPositions[3],
+    y,
+    size: 11,
+    font: boldFont,
+    color: rgb(0.07, 0.09, 0.15),
+  });
+
+  y -= rowHeight + 12;
+
+  for (const [index, choice] of choices.entries()) {
+    if (y < margin + 60) {
+      currentPage = pdfDoc.addPage([595.28, 841.89]);
+      y = currentPage.getHeight() - margin;
+    }
+
+    if (index % 2 === 0) {
+      currentPage.drawRectangle({
+        x: margin,
+        y: y - 6,
+        width: currentPage.getWidth() - margin * 2,
+        height: rowHeight + 4,
+        color: rgb(0.97, 0.98, 0.99),
+      });
+    }
+
+    currentPage.drawText(choice.userName ?? "Inconnu", {
+      x: columnPositions[0],
+      y,
+      size: 10,
+      font,
+      color: rgb(0.07, 0.09, 0.15),
+      maxWidth: 130,
+    });
+    currentPage.drawText(choice.choice, {
+      x: columnPositions[1],
+      y,
+      size: 10,
+      font,
+      color: rgb(0.07, 0.09, 0.15),
+      maxWidth: 170,
+    });
+    currentPage.drawText(choice.note ?? "-", {
+      x: columnPositions[2],
+      y,
+      size: 10,
+      font,
+      color: rgb(0.07, 0.09, 0.15),
+      maxWidth: 175,
+    });
+    currentPage.drawText(new Date(choice.createdAt).toLocaleString("fr-FR"), {
+      x: columnPositions[3],
+      y,
+      size: 10,
+      font,
+      color: rgb(0.07, 0.09, 0.15),
+      maxWidth: 80,
+    });
+
+    y -= rowHeight + 8;
+  }
+
+  const buffer = Buffer.from(await pdfDoc.save());
   return new Response(buffer, {
     status: 200,
     headers: {
