@@ -133,10 +133,18 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 }
 
 export async function GET(req: NextRequest, { params }: { params: any }) {
-  const roomId = params.id;
-  const messages = await (db as any).collaborationMessage.findMany({
-    where: { roomId },
-    orderBy: { createdAt: "asc" },
-  });
-  return NextResponse.json({ messages });
+  try {
+    const roomId = params.id;
+    const messages = await (db as any).collaborationMessage.findMany({
+      where: { roomId },
+      orderBy: { createdAt: "asc" },
+    });
+    return NextResponse.json({ messages });
+  } catch (error) {
+    console.error("Collab messages GET failed", error);
+    return NextResponse.json(
+      { error: "Impossible de charger les messages. Veuillez réessayer." },
+      { status: 500 },
+    );
+  }
 }
