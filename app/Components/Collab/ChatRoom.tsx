@@ -27,7 +27,7 @@ export default function ChatRoom({
       try {
         const url = new URL(raw);
         const isLocalhost = ["localhost", "127.0.0.1"].includes(url.hostname);
-        if (!isLocalhost && url.port === "4000" && url.protocol === "https:") {
+        if (!isLocalhost && url.protocol === "https:") {
           url.port = "";
           return url.toString().replace(/\/$/, "");
         }

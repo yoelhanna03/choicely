@@ -13,7 +13,7 @@ function normalizeSocketUrl(raw: string) {
   try {
     const url = new URL(raw);
     const isLocalhost = ["localhost", "127.0.0.1"].includes(url.hostname);
-    if (!isLocalhost && url.port === "4000" && url.protocol === "https:") {
+    if (!isLocalhost && url.protocol === "https:") {
       url.port = "";
       return url.toString().replace(/\/$/, "");
     }
@@ -61,8 +61,6 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
       console.error("Collab message POST: room not found", { roomId, body });
       return NextResponse.json({ error: "Salle introuvable" }, { status: 404 });
     }
-    if (!content || typeof content !== "string")
-      return NextResponse.json({ error: "Contenu manquant" }, { status: 400 });
 
     const userId = await getUserIdByEmail(session.user.email as string);
     const senderName = session.user.name ?? session.user.email;
