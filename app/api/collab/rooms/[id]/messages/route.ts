@@ -49,15 +49,18 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
     }
 
     // ensure room exists
+    const body = await req.json();
+    const content = body?.content;
+    if (!content || typeof content !== "string")
+      return NextResponse.json({ error: "Contenu manquant" }, { status: 400 });
+
     const roomExists = await (db as any).collaborationRoom.findUnique({
       where: { id: roomId },
     });
     if (!roomExists) {
-      console.error("Collab message POST: room not found", { roomId });
+      console.error("Collab message POST: room not found", { roomId, body });
       return NextResponse.json({ error: "Salle introuvable" }, { status: 404 });
     }
-    const body = await req.json();
-    const content = body?.content;
     if (!content || typeof content !== "string")
       return NextResponse.json({ error: "Contenu manquant" }, { status: 400 });
 
@@ -142,7 +145,10 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 
     return NextResponse.json({ msg });
   } catch (error) {
-    console.error("Collab message POST failed", error);
+    console.error("Collab message POST failed", {
+      params,
+      error,
+    });
     return NextResponse.json(
       { error: "Erreur interne du serveur. Veuillez réessayer." },
       { status: 500 },
