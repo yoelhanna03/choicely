@@ -430,14 +430,7 @@ export default function CollabPage() {
           </div>
 
           {/* MAIN GRID */}
-          <div
-            className="collab-grid stagger-2"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "300px 1fr",
-              gap: 16,
-            }}
-          >
+          <div className="collab-grid stagger-2 grid grid-cols-1 md:grid-cols-[300px_1fr] gap-4">
             {/* LEFT — ROOMS LIST */}
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div

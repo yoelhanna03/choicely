@@ -195,7 +195,7 @@ export default function ChatRoom({
   }
 
   return (
-    <div className="p-4 bg-[#0b0b10] rounded">
+    <div className="p-4 bg-[#0b0b10] rounded w-full">
       <div className="flex justify-between items-center mb-3">
         <div className="font-medium">Salle: {roomId}</div>
         <div>
@@ -207,7 +207,7 @@ export default function ChatRoom({
 
       <div
         ref={messagesRef}
-        className="h-64 overflow-y-auto mb-3 p-2 bg-[#08080a] rounded"
+        className="h-64 md:h-72 overflow-y-auto mb-3 p-2 bg-[#08080a] rounded"
       >
         {messages.length === 0 && (
           <div className="text-sm text-white/50">
@@ -281,7 +281,7 @@ export default function ChatRoom({
         </div>
       </div>
 
-      <div className="mb-4 p-4 rounded bg-[#080811] border border-white/10">
+      <div className="mb-4 p-4 rounded bg-[#080811] border border-white/10 overflow-x-auto">
         <div className="flex items-center justify-between gap-3 mb-3">
           <div>
             <div className="text-sm font-semibold text-white">
