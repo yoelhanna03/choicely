@@ -37,6 +37,20 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
     if (!session?.user?.email)
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
+    // log incoming request for easier debugging in production (temporary)
+    try {
+      const headerObj: Record<string, string> = {};
+      req.headers.forEach((v, k) => (headerObj[k] = v));
+      console.log("Collab POST incoming", {
+        url: req.url,
+        method: req.method,
+        params,
+        headers: headerObj,
+      });
+    } catch (e) {
+      console.warn("Failed to serialize headers for logging", e);
+    }
+
     const roomId = params?.id;
     if (!roomId) {
       console.error("Collab message POST: missing roomId in params", {
@@ -51,8 +65,14 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
     // ensure room exists
     const body = await req.json();
     const content = body?.content;
-    if (!content || typeof content !== "string")
+    if (!content || typeof content !== "string") {
+      console.error("Collab message POST: missing/invalid content", {
+        params,
+        body,
+        session: { email: session.user?.email, name: session.user?.name },
+      });
       return NextResponse.json({ error: "Contenu manquant" }, { status: 400 });
+    }
 
     const roomExists = await (db as any).collaborationRoom.findUnique({
       where: { id: roomId },
