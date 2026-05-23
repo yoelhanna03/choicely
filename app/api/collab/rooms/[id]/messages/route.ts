@@ -51,10 +51,11 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
       console.warn("Failed to serialize headers for logging", e);
     }
 
-    const roomId = params?.id;
+    const routeParams = await params;
+    const roomId = routeParams?.id;
     if (!roomId) {
       console.error("Collab message POST: missing roomId in params", {
-        params,
+        params: routeParams,
       });
       return NextResponse.json(
         { error: "Identifiant de salle manquant" },
@@ -176,7 +177,8 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 
 export async function GET(req: NextRequest, { params }: { params: any }) {
   try {
-    const roomId = params.id;
+    const routeParams = await params;
+    const roomId = routeParams?.id;
     const messages = await (db as any).collaborationMessage.findMany({
       where: { roomId },
       orderBy: { createdAt: "asc" },

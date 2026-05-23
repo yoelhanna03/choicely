@@ -9,7 +9,8 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
     if (!session?.user?.email)
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
-    const roomId = params.id;
+    const routeParams = await params;
+    const roomId = routeParams?.id;
     const room = await (db as any).collaborationRoom.findUnique({
       where: { id: roomId },
       include: { members: true },
