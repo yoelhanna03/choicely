@@ -21,6 +21,9 @@ export default function CollabPage() {
   const [canCreate, setCanCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+
+  const activeRoomDetails = rooms.find((r) => r.id === activeRoom);
 
   async function fetchSubscription() {
     try {
@@ -79,6 +82,29 @@ export default function CollabPage() {
     setActiveRoom(id);
     setActiveRoomName(roomName);
     fetchRooms();
+  }
+
+  async function deleteRoom(id: string, roomName: string) {
+    if (!window.confirm(`Supprimer la salle « ${roomName} » ? Cette action est irréversible.`)) {
+      return;
+    }
+
+    setDeleteLoading(id);
+    try {
+      const res = await fetch(`/api/collab/rooms/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+      if (activeRoom === id) {
+        setActiveRoom(null);
+        setActiveRoomName("");
+      }
+      fetchRooms();
+    } finally {
+      setDeleteLoading(null);
+    }
   }
 
   const tierColor =
@@ -575,11 +601,11 @@ export default function CollabPage() {
                           </div>
                         </div>
 
-                        <div style={{ display: "flex", gap: 6 }}>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                           <button
                             className="c-btn-join"
                             onClick={() => joinRoom(r.id, r.name)}
-                            style={{ flex: 1 }}
+                            style={{ flex: 1, minWidth: 120 }}
                           >
                             Rejoindre
                           </button>
@@ -589,9 +615,25 @@ export default function CollabPage() {
                               setActiveRoom(r.id);
                               setActiveRoomName(r.name);
                             }}
+                            style={{ minWidth: 120 }}
                           >
                             Ouvrir
                           </button>
+                          {r.isCreator && (
+                            <button
+                              className="c-btn-ghost"
+                              onClick={() => deleteRoom(r.id, r.name)}
+                              disabled={deleteLoading === r.id}
+                              style={{
+                                minWidth: 120,
+                                color: "#f87171",
+                                borderColor: "rgba(248,113,113,0.25)",
+                                background: "rgba(248,113,113,0.08)",
+                              }}
+                            >
+                              {deleteLoading === r.id ? "Suppression..." : "Supprimer"}
+                            </button>
+                          )}
                         </div>
                       </div>
                     );
@@ -641,18 +683,35 @@ export default function CollabPage() {
                         </p>
                       </div>
                     </div>
-                    <button
-                      className="c-btn-ghost"
-                      onClick={() => {
-                        setActiveRoom(null);
-                        setActiveRoomName("");
-                      }}
-                    >
-                      ✕ Quitter
-                    </button>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      {activeRoomDetails?.isCreator && (
+                        <button
+                          className="c-btn-ghost"
+                          onClick={() => deleteRoom(activeRoom!, activeRoomName)}
+                          disabled={deleteLoading === activeRoom}
+                          style={{
+                            color: "#f87171",
+                            borderColor: "rgba(248,113,113,0.25)",
+                            background: "rgba(248,113,113,0.08)",
+                          }}
+                        >
+                          {deleteLoading === activeRoom ? "Suppression..." : "Supprimer la salle"}
+                        </button>
+                      )}
+                      <button
+                        className="c-btn-ghost"
+                        onClick={() => {
+                          setActiveRoom(null);
+                          setActiveRoomName("");
+                        }}
+                      >
+                        ✕ Quitter
+                      </button>
+                    </div>
                   </div>
                   <ChatRoom
                     roomId={activeRoom}
+                    tier={tier}
                     onClose={() => {
                       setActiveRoom(null);
                       setActiveRoomName("");

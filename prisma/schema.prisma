@@ -124,12 +124,23 @@ model CollaborationMember {
 }
 
 model CollaborationMessage {
-  id        String @id @default(cuid())
-  roomId    String
-  senderId  String?
+  id         String @id @default(cuid())
+  roomId     String
+  senderId   String?
   senderName String?
-  content   String
-  isAi      Boolean @default(false)
+  content    String
+  isAi       Boolean @default(false)
+  createdAt  DateTime @default(now())
+  room       CollaborationRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
+
+model CollaborationChoice {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String?
+  userName  String
+  choice    String
+  note      String?
   createdAt DateTime @default(now())
   room      CollaborationRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
 }
