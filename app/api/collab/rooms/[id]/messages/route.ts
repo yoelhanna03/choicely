@@ -9,12 +9,26 @@ const client = new OpenAI({
   apiKey: process.env.HUGGINGFACE_API_KEY,
 });
 
+function normalizeSocketUrl(raw: string) {
+  try {
+    const url = new URL(raw);
+    const isLocalhost = ["localhost", "127.0.0.1"].includes(url.hostname);
+    if (!isLocalhost && url.port === "4000" && url.protocol === "https:") {
+      url.port = "";
+      return url.toString().replace(/\/$/, "");
+    }
+    return raw;
+  } catch {
+    return raw;
+  }
+}
+
 function getSocketUrl() {
-  return (
+  const raw =
     process.env.SOCKET_URL ||
     process.env.NEXT_PUBLIC_SOCKET_URL ||
-    "http://localhost:4000"
-  );
+    "http://localhost:4000";
+  return normalizeSocketUrl(raw);
 }
 
 export async function POST(req: NextRequest, { params }: { params: any }) {

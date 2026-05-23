@@ -29,5 +29,5 @@ app.post("/emit", (req, res) => {
   return res.json({ ok: true });
 });
 
-const PORT = process.env.SOCKET_PORT || 4000;
+const PORT = process.env.PORT || process.env.SOCKET_PORT || 4000;
 server.listen(PORT, () => console.log(`Socket server listening on ${PORT}`));

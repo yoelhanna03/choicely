@@ -22,14 +22,29 @@ export default function ChatRoom({
     }
     load();
 
-    const socketUrl =
+    const normalizeSocketUrl = (raw: string) => {
+      try {
+        const url = new URL(raw);
+        const isLocalhost = ["localhost", "127.0.0.1"].includes(url.hostname);
+        if (!isLocalhost && url.port === "4000" && url.protocol === "https:") {
+          url.port = "";
+          return url.toString().replace(/\/$/, "");
+        }
+        return raw;
+      } catch {
+        return raw;
+      }
+    };
+
+    const socketUrlRaw =
       process.env.NEXT_PUBLIC_SOCKET_URL ||
       (typeof window !== "undefined" && window.location.hostname === "localhost"
         ? window.location.origin.replace(/:\d+$/, ":4000")
         : window.location.origin);
+    const socketUrl = normalizeSocketUrl(socketUrlRaw);
     import("socket.io-client")
       .then(({ io }) => {
-        const socket = io(socketUrl, { transports: ["websocket"] });
+        const socket = io(socketUrl);
         socket.emit("join", roomId);
         socket.on("message", (payload: any) => {
           setMessages((m) => [...m, payload]);
