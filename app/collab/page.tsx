@@ -84,11 +84,16 @@ export default function CollabPage() {
     fetchRooms();
   }
 
-  async function deleteRoom(id: string, roomName: string) {
-    if (!window.confirm(`Supprimer la salle « ${roomName} » ? Cette action est irréversible.`)) {
-      return;
-    }
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
+  function requestDeleteRoom(id: string, roomName: string) {
+    setPendingDelete({ id, name: roomName });
+  }
+
+  async function deleteRoom(id: string) {
     setDeleteLoading(id);
     try {
       const res = await fetch(`/api/collab/rooms/${id}`, { method: "DELETE" });
@@ -104,7 +109,13 @@ export default function CollabPage() {
       fetchRooms();
     } finally {
       setDeleteLoading(null);
+      setPendingDelete(null);
     }
+  }
+
+  function closeDeleteModal() {
+    if (deleteLoading) return;
+    setPendingDelete(null);
   }
 
   const tierColor =
@@ -622,7 +633,7 @@ export default function CollabPage() {
                           {r.isCreator && (
                             <button
                               className="c-btn-ghost"
-                              onClick={() => deleteRoom(r.id, r.name)}
+                              onClick={() => requestDeleteRoom(r.id, r.name)}
                               disabled={deleteLoading === r.id}
                               style={{
                                 minWidth: 120,
@@ -687,7 +698,7 @@ export default function CollabPage() {
                       {activeRoomDetails?.isCreator && (
                         <button
                           className="c-btn-ghost"
-                          onClick={() => deleteRoom(activeRoom!, activeRoomName)}
+                          onClick={() => requestDeleteRoom(activeRoom!, activeRoomName)}
                           disabled={deleteLoading === activeRoom}
                           style={{
                             color: "#f87171",
@@ -800,6 +811,117 @@ export default function CollabPage() {
         </main>
       </div>
 
+      {pendingDelete ? (
+        <div className="modal-overlay" onClick={closeDeleteModal}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: 16,
+              }}
+            >
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 16,
+                  background: "rgba(248,113,113,0.12)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6 7L18 7"
+                    stroke="#ef4444"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M9 7V5.5C9 4.67157 9.67157 4 10.5 4H13.5C14.3284 4 15 4.67157 15 5.5V7"
+                    stroke="#ef4444"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M19 7.5L18.2 19.8C18.1316 20.6926 17.3658 21.375 16.4709 21.375H7.52909C6.6342 21.375 5.86836 20.6926 5.8 19.8L5 7.5"
+                    stroke="#ef4444"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M9 11V17"
+                    stroke="#ef4444"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M15 11V17"
+                    stroke="#ef4444"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: 20,
+                  fontWeight: 700,
+                  color: "#fff",
+                }}
+              >
+                Supprimer la salle ?
+              </h2>
+              <p
+                style={{
+                  marginTop: 10,
+                  fontSize: 13,
+                  lineHeight: 1.7,
+                  color: "rgba(255,255,255,0.65)",
+                }}
+              >
+                Cette action supprimera définitivement la salle et toutes les données associées.
+                Cette opération est irréversible.
+              </p>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                marginTop: 24,
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              <button
+                className="c-btn-ghost"
+                onClick={closeDeleteModal}
+                disabled={deleteLoading !== null}
+                style={{ minWidth: 120 }}
+              >
+                Annuler
+              </button>
+              <button
+                className="c-btn-primary"
+                onClick={() => deleteRoom(pendingDelete.id)}
+                disabled={deleteLoading === pendingDelete.id}
+                style={{
+                  background: "#ef4444",
+                  color: "#fff",
+                  minWidth: 120,
+                }}
+              >
+                {deleteLoading === pendingDelete.id ? "Suppression..." : "Supprimer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       {/* MODAL CREATE */}
       {showCreate && (
         <div className="modal-overlay" onClick={() => setShowCreate(false)}>
